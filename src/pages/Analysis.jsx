@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useCsv } from "../customHooks/useCsv";
 import Plotly from "plotly.js-dist-min";
 
@@ -10,28 +10,31 @@ function Analysis() {
   const [tableFilter, setTableFilter] = useState(null);
   const plotRef = useRef(null);
 
-  const colors = [
-    "#6366f1",
-    "#10b981",
-    "#f59e0b",
-    "#ef4444",
-    "#8b5cf6",
-    "#06b6d4",
-    "#84cc16",
-    "#f97316",
-    "#ec4899",
-    "#14b8a6",
-    "#a855f7",
-    "#3b82f6",
-    "#eab308",
-    "#22c55e",
-    "#f43f5e",
-    "#8b5cf6",
-    "#0ea5e9",
-    "#84cc16",
-    "#f59e0b",
-    "#ef4444",
-  ];
+  const colors = useMemo(
+    () => [
+      "#6366f1",
+      "#10b981",
+      "#f59e0b",
+      "#ef4444",
+      "#8b5cf6",
+      "#06b6d4",
+      "#84cc16",
+      "#f97316",
+      "#ec4899",
+      "#14b8a6",
+      "#a855f7",
+      "#3b82f6",
+      "#eab308",
+      "#22c55e",
+      "#f43f5e",
+      "#8b5cf6",
+      "#0ea5e9",
+      "#84cc16",
+      "#f59e0b",
+      "#ef4444",
+    ],
+    []
+  );
 
   // Find the appropriate column names based on content
   const getColumnName = (searchTerms) => {
@@ -40,54 +43,35 @@ function Analysis() {
     );
   };
 
-  const amountColumn = getColumnName(["amount"]);
-  const typeColumn = getColumnName(["type"]);
-  const categoryColumn = getColumnName(["category"]);
-  const notesColumn = getColumnName(["note", "description", "comment"]);
-  const timeColumn = getColumnName(["time", "date"]);
+  const amountColumn = getColumnName(["amount", "amt", "price", "value"]);
+  const typeColumn = getColumnName([
+    "type",
+    "transaction_type",
+    "debit_credit",
+  ]);
+  const categoryColumn = getColumnName(["category", "cat", "group", "tag"]);
+  const notesColumn = getColumnName([
+    "note",
+    "description",
+    "comment",
+    "memo",
+    "details",
+  ]);
+  const timeColumn = getColumnName(["time", "date", "timestamp", "created"]);
 
-  useEffect(() => {
-    if (csvData.length > 0 && typeColumn && categoryColumn) {
-      const categories = [
-        ...new Set(
-          csvData
-            .filter(
-              (item) =>
-                item[typeColumn] === (currentMode === "income" ? "+" : "-")
-            )
-            .map((item) => item[categoryColumn])
-        ),
-      ];
-      setSelectedCategories(new Set(categories));
-    }
-  }, [csvData, currentMode, typeColumn, categoryColumn]);
-
-  useEffect(() => {
-    if (csvData.length > 0 && typeColumn && categoryColumn) {
-      const filtered = csvData.filter((item) => {
-        const matchesMode =
-          item[typeColumn] === (currentMode === "income" ? "+" : "-");
-        const matchesCategory = selectedCategories.has(item[categoryColumn]);
-        const matchesTableFilter =
-          !tableFilter || item[categoryColumn] === tableFilter;
-        return matchesMode && matchesCategory && matchesTableFilter;
-      });
-      setFilteredData(filtered);
-    }
-  }, [
-    csvData,
-    currentMode,
-    selectedCategories,
-    tableFilter,
+  // Debug logging
+  console.log("CSV Data sample:", csvData.slice(0, 3));
+  console.log("CSV Columns:", csvColumns);
+  console.log("Detected columns:", {
+    amountColumn,
     typeColumn,
     categoryColumn,
-  ]);
-
-  useEffect(() => {
-    if (filteredData.length > 0 && plotRef.current) {
-      renderChart();
-    }
-  }, [filteredData, selectedCategories]);
+    notesColumn,
+    timeColumn,
+  });
+  console.log("Current mode:", currentMode);
+  console.log("Selected categories:", selectedCategories);
+  console.log("Filtered data length:", filteredData.length);
 
   const formatIndianNumber = (num) => {
     if (num >= 10000000) {
@@ -109,27 +93,39 @@ function Analysis() {
     );
   };
 
-  const getCategoryTotals = () => {
+  const getCategoryTotals = useCallback(() => {
     if (!csvData.length || !typeColumn || !categoryColumn || !amountColumn)
       return [];
 
     const totals = {};
+    const counts = {};
     csvData
-      .filter(
-        (item) => item[typeColumn] === (currentMode === "income" ? "+" : "-")
-      )
+      .filter((item) => {
+        // Handle different type formats - check for substring containing + or -
+        const type = String(item[typeColumn] || "");
+        if (currentMode === "income") {
+          return type.includes("+");
+        } else {
+          return type.includes("-");
+        }
+      })
       .forEach((item) => {
         const category = item[categoryColumn];
         const amount = parseFloat(item[amountColumn] || 0);
         totals[category] = (totals[category] || 0) + amount;
+        counts[category] = (counts[category] || 0) + 1;
       });
 
     return Object.entries(totals)
-      .map(([category, amount]) => ({ category, amount }))
+      .map(([category, amount]) => ({
+        category,
+        amount,
+        count: counts[category],
+      }))
       .sort((a, b) => b.amount - a.amount);
-  };
+  }, [csvData, currentMode, typeColumn, categoryColumn, amountColumn]);
 
-  const renderChart = () => {
+  const renderChart = useCallback(() => {
     const categoryTotals = getCategoryTotals().filter((item) =>
       selectedCategories.has(item.category)
     );
@@ -145,6 +141,9 @@ function Analysis() {
       marker: {
         colors: colors.slice(0, categoryTotals.length),
       },
+      hoverinfo: "label+value+percent",
+      sort: false,
+      direction: "clockwise",
     };
 
     const layout = {
@@ -157,13 +156,78 @@ function Analysis() {
       margin: { t: 30, b: 100, l: 50, r: 50 },
     };
 
-    Plotly.newPlot(plotRef.current, [trace], layout).then(() => {
+    const config = {
+      responsive: true,
+      displayModeBar: false,
+    };
+
+    Plotly.newPlot(plotRef.current, [trace], layout, config).then(() => {
       plotRef.current.on("plotly_click", (data) => {
         const category = data.points[0].label;
         setTableFilter(tableFilter === category ? null : category);
       });
     });
-  };
+  }, [selectedCategories, tableFilter, colors, getCategoryTotals]);
+
+  useEffect(() => {
+    if (csvData.length > 0 && typeColumn && categoryColumn) {
+      // Get all possible values for type column to understand the format
+      const typeValues = [...new Set(csvData.map((item) => item[typeColumn]))];
+      console.log("Type values found:", typeValues);
+
+      const categories = [
+        ...new Set(
+          csvData
+            .filter((item) => {
+              // Handle different type formats - check for substring containing + or -
+              const type = String(item[typeColumn] || "");
+              if (currentMode === "income") {
+                return type.includes("+");
+              } else {
+                return type.includes("-");
+              }
+            })
+            .map((item) => item[categoryColumn])
+        ),
+      ];
+      setSelectedCategories(new Set(categories));
+    }
+  }, [csvData, currentMode, typeColumn, categoryColumn]);
+
+  useEffect(() => {
+    if (csvData.length > 0 && typeColumn && categoryColumn) {
+      const filtered = csvData.filter((item) => {
+        // Handle different type formats - check for substring containing + or -
+        const type = String(item[typeColumn] || "");
+        let matchesMode = false;
+
+        if (currentMode === "income") {
+          matchesMode = type.includes("+");
+        } else {
+          matchesMode = type.includes("-");
+        }
+
+        const matchesCategory = selectedCategories.has(item[categoryColumn]);
+        const matchesTableFilter =
+          !tableFilter || item[categoryColumn] === tableFilter;
+        return matchesMode && matchesCategory && matchesTableFilter;
+      });
+      setFilteredData(filtered);
+    }
+  }, [
+    csvData,
+    currentMode,
+    selectedCategories,
+    tableFilter,
+    typeColumn,
+    categoryColumn,
+  ]);
+
+  useEffect(() => {
+    if (filteredData.length > 0 && plotRef.current) {
+      renderChart();
+    }
+  }, [filteredData, selectedCategories, renderChart]);
 
   const handleCategoryToggle = (category) => {
     const newSelected = new Set(selectedCategories);
@@ -199,6 +263,7 @@ function Analysis() {
     }
 
     setSelectedCategories(newSelected);
+    setTableFilter(null); // Clear any table filter when bulk selecting
   };
 
   const categoryTotals = getCategoryTotals();
@@ -235,6 +300,35 @@ function Analysis() {
                 <p>Explore your data with dynamic visualizations</p>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if required columns are not detected
+  if (!amountColumn || !typeColumn || !categoryColumn) {
+    return (
+      <div className="analysis">
+        <div className="empty-state">
+          <div className="empty-icon">⚠️</div>
+          <h2>Column Detection Issue</h2>
+          <p>Unable to detect required columns in your CSV file.</p>
+          <div
+            style={{
+              textAlign: "left",
+              margin: "20px auto",
+              maxWidth: "600px",
+            }}
+          >
+            <h3>Required columns:</h3>
+            <ul>
+              <li>Amount column: {amountColumn || "❌ Not found"}</li>
+              <li>Type column: {typeColumn || "❌ Not found"}</li>
+              <li>Category column: {categoryColumn || "❌ Not found"}</li>
+            </ul>
+            <h3>Available columns in your CSV:</h3>
+            <p>{csvColumns.join(", ")}</p>
           </div>
         </div>
       </div>
@@ -305,8 +399,12 @@ function Analysis() {
               </div>
 
               <div className="category-list">
-                {categoryTotals.map(({ category, amount }) => (
-                  <label key={category} className="category-item">
+                {categoryTotals.map(({ category, amount, count }) => (
+                  <label
+                    key={category}
+                    className="category-item"
+                    title={`${category} (${count} transactions)`}
+                  >
                     <input
                       type="checkbox"
                       checked={selectedCategories.has(category)}
@@ -330,22 +428,49 @@ function Analysis() {
             </div>
 
             <div className="table-section">
-              <h3>
-                {tableFilter ? `📂 ${tableFilter} Records` : "📋 All Records"}
-                {filteredData.length > 0 &&
-                  ` (₹${formatIndianNumber(getTotalAmount())})`}
-              </h3>
+              <div className="table-header">
+                <h3>
+                  {currentMode === "income" ? "📈 Incomes" : "📉 Expenses"}
+                  {tableFilter ? `: ${tableFilter}` : ""}
+                  {filteredData.length > 0 &&
+                    ` (Total: ₹${formatIndianNumber(getTotalAmount())})`}
+                </h3>
+                {tableFilter && (
+                  <button
+                    className="clear-filter-btn"
+                    onClick={() => setTableFilter(null)}
+                    title="Clear category filter"
+                  >
+                    ✕ Clear Filter
+                  </button>
+                )}
+              </div>
 
               {filteredData.length === 0 ? (
-                <p
-                  style={{
-                    textAlign: "center",
-                    color: "var(--gray-500)",
-                    padding: "2rem",
-                  }}
-                >
-                  No records to display
-                </p>
+                <div style={{ textAlign: "center", padding: "2rem" }}>
+                  {selectedCategories.size === 0 ? (
+                    <div>
+                      <p
+                        style={{
+                          color: "var(--gray-500)",
+                          marginBottom: "1rem",
+                        }}
+                      >
+                        📋 No categories selected
+                      </p>
+                      <p
+                        style={{ color: "var(--gray-400)", fontSize: "0.9rem" }}
+                      >
+                        Please select at least one category from the filters to
+                        view data
+                      </p>
+                    </div>
+                  ) : (
+                    <p style={{ color: "var(--gray-500)" }}>
+                      No records to display for selected categories
+                    </p>
+                  )}
+                </div>
               ) : (
                 <table className="data-table">
                   <thead>
@@ -366,8 +491,12 @@ function Analysis() {
                         </td>
                         <td className={`amount ${currentMode}`}>
                           ₹
-                          {formatIndianNumber(
-                            parseFloat(item[amountColumn] || 0)
+                          {parseFloat(item[amountColumn] || 0).toLocaleString(
+                            "en-IN",
+                            {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }
                           )}
                         </td>
                         <td>{item[categoryColumn] || "N/A"}</td>
