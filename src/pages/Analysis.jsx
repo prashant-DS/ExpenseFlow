@@ -9,6 +9,7 @@ function Analysis() {
   const [filteredData, setFilteredData] = useState([]);
   const [tableFilter, setTableFilter] = useState(null);
   const [dateRange, setDateRange] = useState({ startDate: "", endDate: "" });
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const plotRef = useRef(null);
 
   const colors = useMemo(
@@ -313,6 +314,14 @@ function Analysis() {
     setSelectedCategories(newSelected);
   };
 
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
   const handleBulkSelect = (action) => {
     const categoryTotals = getCategoryTotals();
     let newSelected = new Set();
@@ -339,6 +348,38 @@ function Analysis() {
     setSelectedCategories(newSelected);
     setTableFilter(null); // Clear any table filter when bulk selecting
   };
+
+  const getSortedData = () => {
+    if (!sortConfig.key) return filteredData;
+
+    const sortedData = [...filteredData].sort((a, b) => {
+      let aValue, bValue;
+
+      if (sortConfig.key === "date") {
+        aValue =
+          timeColumn && a[timeColumn] ? new Date(a[timeColumn]) : new Date(0);
+        bValue =
+          timeColumn && b[timeColumn] ? new Date(b[timeColumn]) : new Date(0);
+      } else if (sortConfig.key === "amount") {
+        aValue = parseFloat(a[amountColumn] || 0);
+        bValue = parseFloat(b[amountColumn] || 0);
+      } else {
+        return 0;
+      }
+
+      if (aValue < bValue) {
+        return sortConfig.direction === "asc" ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
+
+    return sortedData;
+  };
+
+  const sortedTableData = getSortedData();
 
   const categoryTotals = getCategoryTotals();
 
@@ -614,14 +655,36 @@ function Analysis() {
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>Date</th>
-                      <th>Amount</th>
+                      <th
+                        onClick={() => handleSort("date")}
+                        style={{ cursor: "pointer", userSelect: "none" }}
+                        title="Click to sort by date"
+                      >
+                        Date{" "}
+                        {sortConfig.key === "date" && (
+                          <span style={{ marginLeft: "4px" }}>
+                            {sortConfig.direction === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </th>
+                      <th
+                        onClick={() => handleSort("amount")}
+                        style={{ cursor: "pointer", userSelect: "none" }}
+                        title="Click to sort by amount"
+                      >
+                        Amount{" "}
+                        {sortConfig.key === "amount" && (
+                          <span style={{ marginLeft: "4px" }}>
+                            {sortConfig.direction === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </th>
                       <th>Category</th>
                       <th>Description</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredData.map((item, index) => (
+                    {sortedTableData.map((item, index) => (
                       <tr key={index}>
                         <td>
                           {timeColumn && item[timeColumn]
