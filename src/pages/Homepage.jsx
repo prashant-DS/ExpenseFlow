@@ -16,17 +16,12 @@ function Homepage() {
   const [inlineSuggestion, setInlineSuggestion] = useState("");
 
   const parseText = (text) => {
-    const lines = text.split("\n").filter((line) => line.trim());
-    const parsed = [];
+    // For input field, we only parse a single line
+    const line = text.trim();
+    if (!line) return [];
 
-    for (const line of lines) {
-      const entry = parseLineToEntry(line.trim());
-      if (entry) {
-        parsed.push(entry);
-      }
-    }
-
-    return parsed;
+    const entry = parseLineToEntry(line);
+    return entry ? [entry] : [];
   };
 
   const parseLineToEntry = (line) => {
@@ -258,7 +253,7 @@ function Homepage() {
     const parsed = parseText(textInput);
     setPendingEntries((prevEntries) => [...prevEntries, ...parsed]); // Append new entries
     setShowPreview(true);
-    setTextInput(""); // Clear the textarea after preview
+    setTextInput(""); // Clear the input after preview
   };
 
   const handleAddAll = () => {
@@ -344,17 +339,7 @@ function Homepage() {
     // Accept suggestion with Tab key
     if (e.key === "Tab" && inlineSuggestion && inlineSuggestion !== textInput) {
       e.preventDefault();
-
-      // If the suggestion ends with just "on" or "from", add a space
-      if (
-        inlineSuggestion.endsWith(" on") ||
-        inlineSuggestion.endsWith(" from")
-      ) {
-        setTextInput(inlineSuggestion + " ");
-      } else {
-        setTextInput(inlineSuggestion);
-      }
-
+      setTextInput(inlineSuggestion + " ");
       setInlineSuggestion("");
       return;
     }
@@ -387,12 +372,12 @@ function Homepage() {
         <div className="add-entries-section">
           <h2>Add New Entries</h2>
           <div className="input-container">
-            <textarea
+            <input
               id="expense-input-disabled"
               name="expense-input-disabled"
+              type="text"
               className="text-input"
               placeholder="Enter your expenses or income (e.g., '50 on bus', '200 for lunch at restaurant', 'salary received 50000', 'electricity bill 1500')"
-              rows={4}
               disabled
             />
           </div>
@@ -417,15 +402,15 @@ function Homepage() {
       <div className="add-entries-section">
         <h2>Add New Entries</h2>
         <div className="input-container" style={{ position: "relative" }}>
-          <textarea
+          <input
             id="expense-input"
             name="expense-input"
+            type="text"
             value={textInput}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             className="text-input"
             placeholder="Start typing... e.g., '50 on food for dinner', '200 from grocery store for food'"
-            rows={4}
             style={{
               position: "relative",
               backgroundColor: "transparent",
@@ -444,19 +429,20 @@ function Homepage() {
                 right: "2px", // Account for 2px border
                 bottom: "2px", // Account for 2px border
                 pointerEvents: "none",
-                padding: "1.5rem", // Match exact textarea padding
+                padding: "1.5rem", // Match exact input padding
                 fontSize: "var(--font-size-base)",
                 fontFamily: "var(--font-family-base)",
                 fontWeight: "var(--font-weight-normal)",
                 lineHeight: "var(--line-height-relaxed)",
                 color: "transparent",
-                whiteSpace: "pre-wrap",
+                whiteSpace: "pre", // Preserve whitespace including leading spaces
                 overflow: "hidden",
                 zIndex: 1,
                 border: "none",
                 borderRadius: "14px", // Slightly smaller to account for border offset
-                resize: "none",
                 boxSizing: "border-box",
+                display: "flex",
+                alignItems: "center", // Center vertically in the input
               }}
             >
               <span style={{ color: "transparent" }}>{textInput}</span>

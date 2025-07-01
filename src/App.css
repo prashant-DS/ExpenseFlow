@@ -311,9 +311,9 @@ button.upload-btn:hover {
   margin-bottom: 2rem;
 }
 
-textarea.text-input {
+input.text-input {
   width: 100%;
-  min-height: 140px;
+  height: 60px;
   padding: 1.5rem;
   background: var(--bg-primary);
   border: 2px solid var(--bg-tertiary);
@@ -323,7 +323,6 @@ textarea.text-input {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-normal);
   line-height: var(--line-height-relaxed);
-  resize: vertical;
   transition: all 0.3s ease;
   box-shadow: var(--shadow-sm);
   box-sizing: border-box;
@@ -332,14 +331,14 @@ textarea.text-input {
   appearance: none;
 }
 
-textarea.text-input:focus {
+input.text-input:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
   transform: translateY(-1px);
 }
 
-textarea.text-input::placeholder {
+input.text-input::placeholder {
   color: var(--text-muted);
   font-style: italic;
 }
