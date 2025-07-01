@@ -1,7 +1,9 @@
 {
-  "name": "my-money",
+  "name": "money-tracker",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Smart financial tracking app with intelligent expense parsing and insightful analytics",
+  "author": "Prashant Kumar",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1,12 +1,79 @@
-# React + Vite
+# Money Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A smart financial tracking application that makes expense management effortless. Simply describe your expenses in natural language, and let the app intelligently parse and categorize them.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 🎯 Intelligent Expense Parsing
+- Write expenses naturally: "50 on bus", "200 for lunch at restaurant", "salary received 50000"
+- Automatic amount extraction and categorization
+- Smart type detection (income vs expense)
 
-## Expanding the ESLint configuration
+### 📊 Comprehensive Analytics
+- Interactive pie charts with category breakdowns
+- Income vs expense analysis with toggle views
+- Detailed transaction tables with filtering
+- Indian number formatting (Cr, L, K)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 📁 CSV Management
+- Upload existing financial data in CSV format
+- Automatic column detection and mapping
+- Dynamic data validation and suggestions
+- Export updated data as CSV
+
+### 🎨 Modern UI/UX
+- Dark theme with glassmorphism effects
+- Responsive design for all devices
+- Smooth animations and transitions
+- Intuitive navigation and interactions
+
+## Getting Started
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd money-tracker
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Start development server**
+   ```bash
+   npm run dev
+   ```
+
+4. **Upload CSV data** (optional)
+   - Use the "Upload CSV" button in the navigation
+   - Or start fresh and add entries manually
+
+5. **Add expenses naturally**
+   - Go to "Add Entry" page
+   - Type expenses like: "taxi 150", "coffee 80", "monthly salary 50000"
+   - Preview and confirm entries
+
+6. **Analyze your finances**
+   - Visit the "Analysis" page
+   - Toggle between income and expenses
+   - Filter by categories and explore insights
+
+## Technology Stack
+
+- **Frontend**: React 19 with React Router
+- **Charts**: Plotly.js for interactive visualizations
+- **CSV Processing**: Papa Parse for robust data handling
+- **Build Tool**: Vite for fast development and builds
+- **Styling**: Custom CSS with CSS variables and modern design
+
+## Project Structure
+
+```
+src/
+├── components/          # Reusable UI components
+├── customHooks/         # CSV context and data management
+├── pages/              # Main application pages
+├── App.jsx             # Main app component with routing
+└── App.css             # Comprehensive styling system
+```
