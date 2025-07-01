@@ -148,12 +148,13 @@ function Analysis() {
 
     const layout = {
       height: 450,
-      showlegend: true,
-      legend: {
-        orientation: "h",
-        y: -0.1,
+      showlegend: false, // Hide legend
+      margin: { t: 30, b: 30, l: 50, r: 50 }, // Reduced bottom margin since no legend
+      paper_bgcolor: "transparent", // Make chart background transparent
+      plot_bgcolor: "transparent", // Make plot area background transparent
+      font: {
+        color: "#cbd5e1", // text-secondary color for all text
       },
-      margin: { t: 30, b: 100, l: 50, r: 50 },
     };
 
     const config = {
@@ -337,10 +338,6 @@ function Analysis() {
 
   return (
     <div className="analysis">
-      <div className="dashboard-header">
-        <h1>📊 Financial Insights Dashboard</h1>
-      </div>
-
       <div className="dashboard-container">
         <div className="toggle-section">
           <div className="toggle-switch">
@@ -371,13 +368,13 @@ function Analysis() {
               Expense
             </label>
           </div>
-        </div>
 
-        <div className="summary-section">
-          <h2 className={`total-amount ${currentMode}`}>
-            Total {currentMode === "income" ? "Income" : "Expense"}: ₹
-            {formatIndianNumber(getTotalAmount())}
-          </h2>
+          <div className="summary-section">
+            <div className={`total-amount ${currentMode}`}>
+              Total {currentMode === "income" ? "Income" : "Expense"}: ₹
+              {formatIndianNumber(getTotalAmount())}
+            </div>
+          </div>
         </div>
 
         <div className="dashboard-content">
@@ -386,14 +383,28 @@ function Analysis() {
               <h3>🏷️ Category Filters</h3>
 
               <div className="filter-buttons">
-                <button onClick={() => handleBulkSelect("top5")}>Top 5</button>
-                <button onClick={() => handleBulkSelect("bottom5")}>
+                <button
+                  className="filter-btn"
+                  onClick={() => handleBulkSelect("top5")}
+                >
+                  Top 5
+                </button>
+                <button
+                  className="filter-btn"
+                  onClick={() => handleBulkSelect("bottom5")}
+                >
                   Bottom 5
                 </button>
-                <button onClick={() => handleBulkSelect("all")}>
+                <button
+                  className="filter-btn"
+                  onClick={() => handleBulkSelect("all")}
+                >
                   Select All
                 </button>
-                <button onClick={() => handleBulkSelect("none")}>
+                <button
+                  className="filter-btn"
+                  onClick={() => handleBulkSelect("none")}
+                >
                   Unselect All
                 </button>
               </div>

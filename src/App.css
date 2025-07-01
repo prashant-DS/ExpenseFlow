@@ -6,7 +6,9 @@
 }
 
 /* Button reset - exclude our styled buttons and textareas */
-button:not(.upload-btn):not(.add-all-btn):not(.preview-btn) {
+button:not(.upload-btn):not(.add-all-btn):not(.preview-btn):not(
+    .filter-btn
+  ):not(.clear-filter-btn) {
   background: none;
   border: none;
   padding: 0;
@@ -536,23 +538,6 @@ textarea.text-input::placeholder {
   min-height: calc(100vh - 100px);
 }
 
-.dashboard-header {
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: white;
-  text-align: center;
-  padding: 2rem;
-  border-radius: 20px;
-  margin-bottom: 2rem;
-  box-shadow: var(--shadow-lg);
-}
-
-.dashboard-header h1 {
-  font-size: var(--font-size-4xl);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-tight);
-  margin: 0;
-}
-
 .dashboard-container {
   width: 100%;
   padding: 0 2rem;
@@ -589,13 +574,17 @@ textarea.text-input::placeholder {
 }
 
 .toggle-section {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 2rem;
   margin: 2rem 0;
 }
 
 .toggle-switch {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 1rem;
   background: var(--bg-secondary);
   backdrop-filter: blur(20px);
@@ -603,6 +592,7 @@ textarea.text-input::placeholder {
   border-radius: 16px;
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border);
+  min-width: 280px;
 }
 
 .toggle-label {
@@ -651,22 +641,28 @@ textarea.text-input::placeholder {
 }
 
 .summary-section {
-  text-align: center;
-  margin: 2rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .total-amount {
-  font-size: var(--font-size-3xl);
-  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-tight);
-  padding: 2rem;
+  padding: 1.5rem;
   background: var(--bg-secondary);
   backdrop-filter: blur(20px);
   border-radius: 16px;
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border);
-  display: inline-block;
-  min-width: 300px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 280px;
+  text-align: center;
+  margin: 0 !important;
+  height: 100%;
 }
 
 .total-amount.income {
@@ -857,7 +853,6 @@ textarea.text-input::placeholder {
 h1,
 .h1,
 .welcome-section h1,
-.dashboard-header h1,
 .empty-state h2 {
   font-size: var(--font-size-4xl) !important;
   font-weight: var(--font-weight-bold) !important;
@@ -940,7 +935,8 @@ p,
 .btn,
 .preview-btn,
 .add-all-btn,
-.filter-buttons button {
+.filter-buttons button,
+.filter-btn {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -955,6 +951,19 @@ p,
   text-decoration: none !important;
   transition: all 0.2s ease !important;
   user-select: none !important;
+}
+
+.filter-btn {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.filter-btn:hover {
+  background: var(--bg-secondary) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: var(--shadow-md) !important;
 }
 
 .btn:disabled {
@@ -1086,9 +1095,9 @@ textarea {
     grid-template-columns: 1fr;
   }
 
-  .toggle-switch {
+  .toggle-section {
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 1rem;
   }
 
   .csv-status {
