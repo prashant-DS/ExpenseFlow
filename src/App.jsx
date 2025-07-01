@@ -25,7 +25,7 @@ function NavBar() {
     <nav className="navbar">
       <div className="nav-container">
         <div className="nav-left">
-          <h1>Money Tracker</h1>
+          <h1>💸 ExpenseFlow</h1>
         </div>
 
         <div className="nav-center">
@@ -66,7 +66,7 @@ function NavBar() {
             ) : (
               <div className="csv-status">
                 <span className="csv-info">
-                  {csvFile?.name || "CSV Loaded"}
+                  {csvFile?.name || "Data Loaded"}
                 </span>
                 <button onClick={clearData} className="clear-btn">
                   ×

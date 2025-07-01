@@ -1,16 +1,26 @@
-# 💰 Money Tracker
+# 💸 ExpenseFlow
 
 <div align="center">
 
-![Money Tracker Logo](https://img.shields.io/badge/💰-Money_Tracker-brightgreen?style=for-the-badge)
+![ExpenseFlow Logo](https://img.shields.io/badge/💸-ExpenseFlow-4F46E5?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K)nseFlow
 
-**A smart financial tracking app with intelligent expense parsing and insightful analytics**
+<div align="center">
 
-[![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=flat&logo=react)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-5.4.0-646CFF?style=flat&logo=vite)](https://vitejs.dev/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+!### 📁 **CSV Integration**ExpenseFlow Logo](https://img.shields.io/badge/💸-ExpenseFlow-4F46E5?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K)xpenseFlow
 
-[Features](#-features) • [Demo](#-demo) • [Installation](#-installation) • [Usage](#-usage) • [Contributing](#-contributing)
+<div align="center">
+
+![ExpenseFlow Logo](https://img.shields.io/badge/�-ExpenseFlow-brightgreen?style=for-the-badge)
+
+**Smart expense tracking with natural language processing - just type "50 on coffee" and watch the magic happen!**
+
+[![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=flat&logo=react&logoColor=white)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.4.0-646CFF?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=flat&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![CSV](https://img.shields.io/badge/CSV-Processing-28A745?style=flat&logo=microsoft-excel&logoColor=white)](https://www.papaparse.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat)](https://opensource.org/licenses/MIT)
+
+[✨ Features](#-features) • [🎯 Demo](#-demo) • [🛠️ Installation](#️-installation) • [🚀 Usage](#-usage) • [🤝 Contributing](#-contributing)
 
 </div>
 
@@ -58,15 +68,26 @@
 
 ## 🎯 Demo
 
-### Adding Expenses with Natural Language
+### 💬 Adding Expenses with Natural Language
 
-```
-"50 on uber for office commute"
+_Just type naturally - ExpenseFlow understands!_
+
+```bash
+# Simple expenses
+"50 on coffee"
+"200 groceries"
+
+# Detailed transactions
 "1200 from amazon for laptop stand"
-"25 coffee with friends"
+"75 on uber for office commute"
+"25 coffee with friends at starbucks"
+
+# Income entries
+"salary 50000"
+"freelance payment 15000"
 ```
 
-### Powerful Analytics
+### 📊 Powerful Analytics
 
 - 📈 **Income vs Expense Analysis**
 - 🏷️ **Category-wise Breakdown**
@@ -87,7 +108,7 @@
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd money-tracker
+cd expense-flow
 
 # Install dependencies
 npm install
@@ -96,7 +117,7 @@ npm install
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`
+The app will be available at `http://localhost:5173` 🚀
 
 ### Build for Production
 
@@ -112,52 +133,56 @@ npm run preview
 
 ## 🚀 Usage
 
-### 1. **Upload Your CSV File**
+### 1. **📤 Upload Your CSV File**
 
 - Click "Upload CSV" in the navigation bar
 - Select your financial data CSV file
-- The app automatically detects columns for amounts, categories, dates, etc.
+- ExpenseFlow automatically detects columns for amounts, categories, dates, etc.
 
-### 2. **Add New Expenses**
+### 2. **✍️ Add New Expenses**
 
 Navigate to the "Add Entry" tab and use either:
 
-#### **Quick Text Input**
+#### **💬 Quick Text Input**
 
-```
+_The magic of natural language processing!_
+
+```bash
 100 on groceries for weekly shopping
 ```
 
-#### **Manual Form Entry**
+#### **📝 Manual Form Entry**
 
 - Fill in the form fields
 - Use auto-suggestions from existing data
 - Preview before adding
 
-### 3. **Analyze Your Spending**
+### 3. **📈 Analyze Your Spending**
 
 Switch to the "Analysis" tab to:
 
-- View spending by category
-- Filter by date ranges
-- Toggle between income and expenses
-- Export updated data
+- 🥧 View spending by category with interactive pie charts
+- 📅 Filter by date ranges
+- 🔄 Toggle between income and expenses
+- 💾 Export updated data
 
 ---
 
 ## 🏗️ Technical Architecture
 
-### **Frontend Stack**
+### **🎨 Frontend Stack**
+
+_Modern, fast, and reliable_
 
 ```
-├── React 19.1.0          # UI Framework
-├── React Router 7.6.3    # Navigation
-├── Vite 5.4.0           # Build Tool
-├── Plotly.js 3.0.1      # Data Visualization
-└── PapaParse 5.5.3      # CSV Processing
+├── ⚛️  React 19.1.0          # UI Framework
+├── 🛣️  React Router 7.6.3    # Navigation
+├── ⚡ Vite 5.4.0           # Build Tool
+├── 📊 Plotly.js 3.0.1      # Data Visualization
+└── 📄 PapaParse 5.5.3      # CSV Processing
 ```
 
-### **Project Structure**
+### **📁 Project Structure**
 
 ```
 src/
@@ -171,28 +196,28 @@ src/
 └── main.jsx            # Application entry point
 ```
 
-### **Key Components**
+### **🔧 Key Components**
 
-#### **CsvProvider** (`useCsv.jsx`)
+#### **🎛️ CsvProvider** (`useCsv.jsx`)
 
-- Manages CSV data state
-- Handles file parsing and processing
-- Provides data manipulation methods
-- Maintains column mappings and validations
+- 🗂️ Manages CSV data state
+- 🔄 Handles file parsing and processing
+- 🛠️ Provides data manipulation methods
+- ✅ Maintains column mappings and validations
 
-#### **Homepage** (`Homepage.jsx`)
+#### **🏠 Homepage** (`Homepage.jsx`)
 
-- Natural language expense parsing
-- Dynamic form generation
-- Bulk entry preview and confirmation
-- Smart auto-completion
+- 🧠 Natural language expense parsing
+- 📋 Dynamic form generation
+- 👁️ Bulk entry preview and confirmation
+- 💡 Smart auto-completion
 
-#### **Analysis** (`Analysis.jsx`)
+#### **📊 Analysis** (`Analysis.jsx`)
 
-- Interactive data visualization
-- Advanced filtering capabilities
-- Export functionality
-- Real-time chart updates
+- 📈 Interactive data visualization
+- 🔍 Advanced filtering capabilities
+- 💾 Export functionality
+- ⚡ Real-time chart updates
 
 ---
 
@@ -223,17 +248,17 @@ The app intelligently detects various CSV column formats:
 
 ## 🎨 Customization
 
-### **Styling**
+### **🎨 Styling**
 
-- CSS custom properties for easy theming
-- Responsive breakpoints for all devices
-- Consistent color scheme throughout
+- 🎨 CSS custom properties for easy theming
+- 📱 Responsive breakpoints for all devices
+- 🌈 Consistent color scheme throughout
 
-### **Data Processing**
+### **⚙️ Data Processing**
 
-- Configurable column detection patterns
-- Customizable parsing rules
-- Extensible category management
+- 🔧 Configurable column detection patterns
+- 📝 Customizable parsing rules
+- 📊 Extensible category management
 
 ---
 
@@ -338,5 +363,7 @@ A: The parser handles most common expense formats. If it doesn't parse correctly
 **⭐ Star this repository if you found it helpful!**
 
 Made with ❤️ and ☕ by [Prashant Kumar](https://github.com/your-username)
+
+_ExpenseFlow - Where natural language meets smart finance tracking_ 💸
 
 </div>

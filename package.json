@@ -1,9 +1,18 @@
 {
-  "name": "money-tracker",
+  "name": "expense-flow",
   "private": true,
   "version": "1.0.0",
-  "description": "Smart financial tracking app with intelligent expense parsing and insightful analytics",
+  "description": "ExpenseFlow - Smart expense tracking with natural language processing. Just type '50 on coffee' and watch the magic happen!",
   "author": "Prashant Kumar",
+  "keywords": [
+    "expense tracker",
+    "natural language processing",
+    "financial management",
+    "CSV processing",
+    "analytics",
+    "budget tracker",
+    "react"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",

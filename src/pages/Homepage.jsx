@@ -388,7 +388,7 @@ function Homepage() {
     return (
       <div className="homepage">
         <div className="welcome-section">
-          <h1>Welcome to Money Tracker</h1>
+          <h1>Welcome to ExpenseFlow</h1>
           <p>
             Upload a CSV file to get started with tracking your finances. Once
             uploaded, you can add new entries or analyze your financial data.
@@ -418,7 +418,7 @@ function Homepage() {
   return (
     <div className="homepage">
       <div className="welcome-section">
-        <h1>Welcome to Money Tracker</h1>
+        <h1>Welcome to ExpenseFlow</h1>
         <p>
           Upload a CSV file to get started with tracking your finances. Once
           uploaded, you can add new entries or analyze your financial data.

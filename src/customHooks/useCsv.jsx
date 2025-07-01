@@ -69,7 +69,7 @@ export const CsvProvider = ({ children }) => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = csvFile?.name || "money-tracker.csv";
+    a.download = csvFile?.name || "expense-flow-data.csv";
     a.click();
     window.URL.revokeObjectURL(url);
   };
