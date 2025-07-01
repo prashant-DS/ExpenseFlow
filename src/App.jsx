@@ -1,4 +1,10 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useLocation,
+} from "react-router-dom";
 import { CsvProvider, useCsv } from "./customHooks/useCsv";
 import Homepage from "./pages/Homepage";
 import Analysis from "./pages/Analysis";
@@ -6,6 +12,7 @@ import "./App.css";
 
 function NavBar() {
   const { csvFile, loadCsvFile, clearData, hasData } = useCsv();
+  const location = useLocation();
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -22,10 +29,18 @@ function NavBar() {
         </div>
 
         <div className="nav-center">
-          <Link to="/" className="nav-link">
+          <Link
+            to="/"
+            className={`nav-link ${location.pathname === "/" ? "active" : ""}`}
+          >
             Add Entry
           </Link>
-          <Link to="/analysis" className="nav-link">
+          <Link
+            to="/analysis"
+            className={`nav-link ${
+              location.pathname === "/analysis" ? "active" : ""
+            }`}
+          >
             Analysis
           </Link>
         </div>

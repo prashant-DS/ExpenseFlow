@@ -165,8 +165,10 @@ body {
 }
 
 .nav-link.active {
-  color: var(--text-primary);
-  background: var(--bg-secondary);
+  color: var(--primary) !important;
+  background: transparent !important;
+  box-shadow: 0 2px 0 0 var(--primary) !important;
+  border-radius: 0 !important;
 }
 
 .nav-right {
