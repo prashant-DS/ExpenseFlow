@@ -443,16 +443,16 @@ function Analysis() {
           </div>
 
           <div className="summary-section">
-            <div className={`total-amount ${currentMode}`}>
+            <h3 className={`total-amount ${currentMode}`}>
               Total {currentMode === "income" ? "Income" : "Expense"}: ₹
               {formatIndianNumber(getTotalAmount())}
-            </div>
+            </h3>
           </div>
 
           {/* Date Range Filter */}
           {timeColumn && getDateRange.min && getDateRange.max && (
             <div className="date-filter-section">
-              <h3>📅 Date Range Filter</h3>
+              <h3>Date Range Filter</h3>
               <div className="date-inputs">
                 <div className="date-input-group">
                   <label htmlFor="start-date">From:</label>
