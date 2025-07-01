@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useCsv } from "../customHooks/useCsv";
 import Plotly from "plotly.js-dist-min";
+import "./Analysis.scss";
 
 function Analysis() {
   const { csvData, csvColumns, hasData } = useCsv();
@@ -429,13 +430,7 @@ function Analysis() {
           <div className="empty-icon">⚠️</div>
           <h2>Column Detection Issue</h2>
           <p>Unable to detect required columns in your CSV file.</p>
-          <div
-            style={{
-              textAlign: "left",
-              margin: "20px auto",
-              maxWidth: "600px",
-            }}
-          >
+          <div className="empty-state">
             <h3>Required columns:</h3>
             <ul>
               <li>Amount column: {amountColumn || "❌ Not found"}</li>
@@ -627,26 +622,19 @@ function Analysis() {
               </div>
 
               {filteredData.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "2rem" }}>
+                <div className="no-data-message">
                   {selectedCategories.size === 0 ? (
                     <div>
-                      <p
-                        style={{
-                          color: "var(--gray-500)",
-                          marginBottom: "1rem",
-                        }}
-                      >
+                      <p className="no-categories-selected">
                         📋 No categories selected
                       </p>
-                      <p
-                        style={{ color: "var(--gray-400)", fontSize: "0.9rem" }}
-                      >
+                      <p className="no-categories-subtitle">
                         Please select at least one category from the filters to
                         view data
                       </p>
                     </div>
                   ) : (
-                    <p style={{ color: "var(--gray-500)" }}>
+                    <p className="no-records-message">
                       No records to display for selected categories
                     </p>
                   )}
@@ -657,24 +645,24 @@ function Analysis() {
                     <tr>
                       <th
                         onClick={() => handleSort("date")}
-                        style={{ cursor: "pointer", userSelect: "none" }}
+                        className="sortable"
                         title="Click to sort by date"
                       >
                         Date{" "}
                         {sortConfig.key === "date" && (
-                          <span style={{ marginLeft: "4px" }}>
+                          <span className="sort-indicator">
                             {sortConfig.direction === "asc" ? "↑" : "↓"}
                           </span>
                         )}
                       </th>
                       <th
                         onClick={() => handleSort("amount")}
-                        style={{ cursor: "pointer", userSelect: "none" }}
+                        className="sortable"
                         title="Click to sort by amount"
                       >
                         Amount{" "}
                         {sortConfig.key === "amount" && (
-                          <span style={{ marginLeft: "4px" }}>
+                          <span className="sort-indicator">
                             {sortConfig.direction === "asc" ? "↑" : "↓"}
                           </span>
                         )}

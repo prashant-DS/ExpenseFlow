@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useCsv } from "../customHooks/useCsv";
+import "./Homepage.scss";
 
 function Homepage() {
   const {
@@ -427,7 +428,7 @@ function Homepage() {
 
       <div className="add-entries-section">
         <h2>Add New Entries</h2>
-        <div className="input-container" style={{ position: "relative" }}>
+        <div className="input-container">
           <input
             id="expense-input"
             name="expense-input"
@@ -437,48 +438,13 @@ function Homepage() {
             onKeyDown={handleKeyDown}
             className="text-input"
             placeholder="Start typing 'Amount on Category for Description'... e.g., '200 from grocery store for food'"
-            style={{
-              position: "relative",
-              backgroundColor: "transparent",
-              color: "var(--text-primary)",
-              zIndex: 2,
-            }}
           />
 
           {/* Inline suggestion overlay */}
           {inlineSuggestion && inlineSuggestion !== textInput && (
-            <div
-              style={{
-                position: "absolute",
-                top: "2px", // Account for 2px border
-                left: "2px", // Account for 2px border
-                right: "2px", // Account for 2px border
-                bottom: "2px", // Account for 2px border
-                pointerEvents: "none",
-                padding: "1.5rem", // Match exact input padding
-                fontSize: "var(--font-size-base)",
-                fontFamily: "var(--font-family-base)",
-                fontWeight: "var(--font-weight-normal)",
-                lineHeight: "var(--line-height-relaxed)",
-                color: "transparent",
-                whiteSpace: "pre", // Preserve whitespace including leading spaces
-                overflow: "hidden",
-                zIndex: 1,
-                border: "none",
-                borderRadius: "14px", // Slightly smaller to account for border offset
-                boxSizing: "border-box",
-                display: "flex",
-                alignItems: "center", // Center vertically in the input
-              }}
-            >
-              <span style={{ color: "transparent" }}>{textInput}</span>
-              <span
-                style={{
-                  color: "var(--text-muted)",
-                  opacity: 0.6,
-                  fontWeight: "var(--font-weight-normal)",
-                }}
-              >
+            <div className="inline-suggestion-overlay">
+              <span className="typed-text">{textInput}</span>
+              <span className="suggestion-text">
                 {inlineSuggestion.substring(textInput.length)}
               </span>
             </div>
@@ -486,18 +452,7 @@ function Homepage() {
 
           {/* Subtle hint */}
           {inlineSuggestion && inlineSuggestion !== textInput && (
-            <div
-              style={{
-                position: "absolute",
-                bottom: "-20px",
-                right: "0",
-                fontSize: "var(--font-size-xs)",
-                color: "var(--text-muted)",
-                opacity: 0.7,
-              }}
-            >
-              Press Tab to accept
-            </div>
+            <div className="tab-hint">Press Tab to accept</div>
           )}
         </div>
         <button
@@ -675,19 +630,6 @@ function Homepage() {
                         onClick={() => deleteEntry(index)}
                         className="delete-entry-btn"
                         title="Delete this entry"
-                        style={{
-                          background: "none",
-                          border: "none",
-                          color: "var(--danger)",
-                          cursor: "pointer",
-                          fontSize: "16px",
-                          padding: "4px",
-                          borderRadius: "4px",
-                          opacity: "0.7",
-                          transition: "opacity 0.2s",
-                        }}
-                        onMouseEnter={(e) => (e.target.style.opacity = "1")}
-                        onMouseLeave={(e) => (e.target.style.opacity = "0.7")}
                       >
                         ✕
                       </button>
@@ -697,42 +639,11 @@ function Homepage() {
               </tbody>
             </table>
           </div>
-          <div
-            className="preview-actions"
-            style={{ display: "flex", justifyContent: "center" }}
-          >
-            <button
-              onClick={handleAddAll}
-              className="preview-btn"
-              style={{ margin: "0" }}
-            >
+          <div className="preview-actions">
+            <button onClick={handleAddAll} className="preview-btn">
               Add All Entries to CSV
             </button>
-            <button
-              onClick={deleteAllEntries}
-              className="delete-all-btn"
-              style={{
-                backgroundColor: "transparent",
-                color: "var(--text-secondary)",
-                border: "1px solid var(--border)",
-                padding: "10px 20px",
-                borderRadius: "5px",
-                cursor: "pointer",
-                marginLeft: "10px",
-                transition: "all 0.2s",
-                fontSize: "0.875rem",
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = "var(--danger)";
-                e.target.style.color = "var(--text-primary)";
-                e.target.style.borderColor = "var(--danger)";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = "transparent";
-                e.target.style.color = "var(--text-secondary)";
-                e.target.style.borderColor = "var(--border)";
-              }}
-            >
+            <button onClick={deleteAllEntries} className="delete-all-btn">
               Delete All
             </button>
           </div>

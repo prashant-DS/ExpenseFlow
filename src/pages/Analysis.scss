@@ -1,0 +1,45 @@
+.analysis {
+  .empty-state {
+    text-align: left;
+    margin: 20px auto;
+    max-width: 600px;
+  }
+
+  .dashboard-container {
+    .table-section {
+      .no-data-message {
+        text-align: center;
+        padding: 2rem;
+
+        .no-categories-selected {
+          color: var(--gray-500);
+          margin-bottom: 1rem;
+        }
+
+        .no-categories-subtitle {
+          color: var(--gray-400);
+          font-size: 0.9rem;
+        }
+
+        .no-records-message {
+          color: var(--gray-500);
+        }
+      }
+
+      .data-table {
+        thead {
+          th {
+            &.sortable {
+              cursor: pointer;
+              user-select: none;
+
+              .sort-indicator {
+                margin-left: 4px;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
