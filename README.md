@@ -2,15 +2,7 @@
 
 <div align="center">
 
-![ExpenseFlow Logo](https://img.shields.io/badge/💸-ExpenseFlow-4F46E5?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K)nseFlow
-
-<div align="center">
-
-!### 📁 **CSV Integration**ExpenseFlow Logo](https://img.shields.io/badge/💸-ExpenseFlow-4F46E5?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K)xpenseFlow
-
-<div align="center">
-
-![ExpenseFlow Logo](https://img.shields.io/badge/�-ExpenseFlow-brightgreen?style=for-the-badge)
+![ExpenseFlow Logo](https://img.shields.io/badge/💸-ExpenseFlow-4F46E5?style=for-the-badge)
 
 **Smart expense tracking with natural language processing - just type "50 on coffee" and watch the magic happen!**
 
@@ -20,7 +12,7 @@
 [![CSV](https://img.shields.io/badge/CSV-Processing-28A745?style=flat&logo=microsoft-excel&logoColor=white)](https://www.papaparse.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat)](https://opensource.org/licenses/MIT)
 
-[✨ Features](#-features) • [🎯 Demo](#-demo) • [🛠️ Installation](#️-installation) • [🚀 Usage](#-usage) • [🤝 Contributing](#-contributing)
+[✨ Features](#-features) • [🎯 Demo](#-demo) • [🛠️ Installation](#-installation) • [🚀 Usage](#-usage) • [🤝 Contributing](#-contributing)
 
 </div>
 
@@ -43,7 +35,7 @@
   - `50 from ATM`
   - `200 grocery shopping`
 
-### � **CSV Integration**
+### 📁 **CSV Integration**
 
 - **File Upload & Processing** - Upload existing CSV files to import transaction history
 - **Dynamic Column Detection** - Automatically identifies amount, category, date, and note columns
@@ -315,7 +307,7 @@ npm run dev
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ---
 
@@ -323,9 +315,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Prashant Kumar**
 
-- 📧 Email: [your-email@example.com](mailto:your-email@example.com)
-- 💼 LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourprofile)
-- 🐦 Twitter: [@YourTwitter](https://twitter.com/yourhandle)
+- � GitHub: [Prashant Kumar](https://github.com/prashant-kumar)
+- � Contact: Available via GitHub
 
 ---
 
@@ -362,7 +353,7 @@ A: The parser handles most common expense formats. If it doesn't parse correctly
 
 **⭐ Star this repository if you found it helpful!**
 
-Made with ❤️ and ☕ by [Prashant Kumar](https://github.com/your-username)
+Made with ❤️ and ☕ by [Prashant Kumar](https://github.com/prashant-kumar)
 
 _ExpenseFlow - Where natural language meets smart finance tracking_ 💸
 
