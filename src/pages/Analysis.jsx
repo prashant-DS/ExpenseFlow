@@ -8,6 +8,7 @@ function Analysis() {
   const [selectedCategories, setSelectedCategories] = useState(new Set());
   const [filteredData, setFilteredData] = useState([]);
   const [tableFilter, setTableFilter] = useState(null);
+  const [dateRange, setDateRange] = useState({ startDate: "", endDate: "" });
   const plotRef = useRef(null);
 
   const colors = useMemo(
@@ -85,6 +86,58 @@ function Analysis() {
     }
   };
 
+  // Helper function to parse and validate dates
+  const parseDate = (dateStr) => {
+    if (!dateStr) return null;
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) ? null : date;
+  };
+
+  // Get date range from CSV data
+  const getDateRange = useMemo(() => {
+    if (!csvData.length || !timeColumn) return { min: "", max: "" };
+
+    const dates = csvData
+      .map((item) => parseDate(item[timeColumn]))
+      .filter((date) => date !== null)
+      .sort((a, b) => a - b);
+
+    if (dates.length === 0) return { min: "", max: "" };
+
+    const minDate = dates[0].toISOString().split("T")[0];
+    const maxDate = dates[dates.length - 1].toISOString().split("T")[0];
+
+    return { min: minDate, max: maxDate };
+  }, [csvData, timeColumn]);
+
+  // Initialize date range when CSV data changes
+  useEffect(() => {
+    if (csvData.length > 0 && timeColumn) {
+      const range = getDateRange;
+      setDateRange({
+        startDate: range.min,
+        endDate: range.max,
+      });
+    }
+  }, [csvData, timeColumn, getDateRange]);
+
+  // Check if a date falls within the selected range
+  const isDateInRange = useCallback(
+    (dateStr) => {
+      if (!dateRange.startDate || !dateRange.endDate) return true;
+
+      const date = parseDate(dateStr);
+      if (!date) return false;
+
+      const start = new Date(dateRange.startDate);
+      const end = new Date(dateRange.endDate);
+      end.setHours(23, 59, 59, 999); // Include the entire end date
+
+      return date >= start && date <= end;
+    },
+    [dateRange.startDate, dateRange.endDate]
+  );
+
   const getTotalAmount = () => {
     if (!amountColumn) return 0;
     return filteredData.reduce(
@@ -103,11 +156,13 @@ function Analysis() {
       .filter((item) => {
         // Handle different type formats - check for substring containing + or -
         const type = String(item[typeColumn] || "");
-        if (currentMode === "income") {
-          return type.includes("+");
-        } else {
-          return type.includes("-");
-        }
+        const matchesType =
+          currentMode === "income" ? type.includes("+") : type.includes("-");
+
+        // Check date range if timeColumn exists
+        const matchesDate = !timeColumn || isDateInRange(item[timeColumn]);
+
+        return matchesType && matchesDate;
       })
       .forEach((item) => {
         const category = item[categoryColumn];
@@ -123,7 +178,15 @@ function Analysis() {
         count: counts[category],
       }))
       .sort((a, b) => b.amount - a.amount);
-  }, [csvData, currentMode, typeColumn, categoryColumn, amountColumn]);
+  }, [
+    csvData,
+    currentMode,
+    typeColumn,
+    categoryColumn,
+    amountColumn,
+    timeColumn,
+    isDateInRange,
+  ]);
 
   const renderChart = useCallback(() => {
     const categoryTotals = getCategoryTotals().filter((item) =>
@@ -182,36 +245,44 @@ function Analysis() {
             .filter((item) => {
               // Handle different type formats - check for substring containing + or -
               const type = String(item[typeColumn] || "");
-              if (currentMode === "income") {
-                return type.includes("+");
-              } else {
-                return type.includes("-");
-              }
+              const matchesType =
+                currentMode === "income"
+                  ? type.includes("+")
+                  : type.includes("-");
+              const matchesDate =
+                !timeColumn || isDateInRange(item[timeColumn]);
+
+              return matchesType && matchesDate;
             })
             .map((item) => item[categoryColumn])
         ),
       ];
       setSelectedCategories(new Set(categories));
     }
-  }, [csvData, currentMode, typeColumn, categoryColumn]);
+  }, [
+    csvData,
+    currentMode,
+    typeColumn,
+    categoryColumn,
+    timeColumn,
+    isDateInRange,
+  ]);
 
   useEffect(() => {
     if (csvData.length > 0 && typeColumn && categoryColumn) {
       const filtered = csvData.filter((item) => {
         // Handle different type formats - check for substring containing + or -
         const type = String(item[typeColumn] || "");
-        let matchesMode = false;
-
-        if (currentMode === "income") {
-          matchesMode = type.includes("+");
-        } else {
-          matchesMode = type.includes("-");
-        }
-
+        const matchesMode =
+          currentMode === "income" ? type.includes("+") : type.includes("-");
         const matchesCategory = selectedCategories.has(item[categoryColumn]);
         const matchesTableFilter =
           !tableFilter || item[categoryColumn] === tableFilter;
-        return matchesMode && matchesCategory && matchesTableFilter;
+        const matchesDate = !timeColumn || isDateInRange(item[timeColumn]);
+
+        return (
+          matchesMode && matchesCategory && matchesTableFilter && matchesDate
+        );
       });
       setFilteredData(filtered);
     }
@@ -222,6 +293,8 @@ function Analysis() {
     tableFilter,
     typeColumn,
     categoryColumn,
+    timeColumn,
+    isDateInRange,
   ]);
 
   useEffect(() => {
@@ -375,6 +448,61 @@ function Analysis() {
               {formatIndianNumber(getTotalAmount())}
             </div>
           </div>
+
+          {/* Date Range Filter */}
+          {timeColumn && getDateRange.min && getDateRange.max && (
+            <div className="date-filter-section">
+              <h3>📅 Date Range Filter</h3>
+              <div className="date-inputs">
+                <div className="date-input-group">
+                  <label htmlFor="start-date">From:</label>
+                  <input
+                    id="start-date"
+                    type="date"
+                    value={dateRange.startDate}
+                    min={getDateRange.min}
+                    max={getDateRange.max}
+                    onChange={(e) =>
+                      setDateRange((prev) => ({
+                        ...prev,
+                        startDate: e.target.value,
+                      }))
+                    }
+                    className="date-input"
+                  />
+                </div>
+                <div className="date-input-group">
+                  <label htmlFor="end-date">To:</label>
+                  <input
+                    id="end-date"
+                    type="date"
+                    value={dateRange.endDate}
+                    min={getDateRange.min}
+                    max={getDateRange.max}
+                    onChange={(e) =>
+                      setDateRange((prev) => ({
+                        ...prev,
+                        endDate: e.target.value,
+                      }))
+                    }
+                    className="date-input"
+                  />
+                </div>
+                <button
+                  className="reset-date-btn"
+                  onClick={() =>
+                    setDateRange({
+                      startDate: getDateRange.min,
+                      endDate: getDateRange.max,
+                    })
+                  }
+                  title="Reset to full date range"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="dashboard-content">
