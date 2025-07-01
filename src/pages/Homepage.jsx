@@ -13,6 +13,7 @@ function Homepage() {
   const [textInput, setTextInput] = useState("");
   const [pendingEntries, setPendingEntries] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [inlineSuggestion, setInlineSuggestion] = useState("");
 
   const parseText = (text) => {
     const lines = text.split("\n").filter((line) => line.trim());
@@ -286,6 +287,92 @@ function Homepage() {
     setShowPreview(false);
   };
 
+  // Generate subtle inline suggestion like VS Code autocomplete
+  const generateInlineSuggestion = (input) => {
+    if (!input.trim()) return "";
+
+    const trimmedInput = input.trim();
+
+    // Check if user typed a number at the start
+    const amountMatch = trimmedInput.match(/^(\d+(?:\.\d{0,2})?)(\s+(.*))?$/);
+    if (amountMatch) {
+      const amount = amountMatch[1];
+      const restOfInput = amountMatch[3] || "";
+
+      // Case 1: If they just typed a number, suggest "on"
+      if (!restOfInput) {
+        return `${amount} on`;
+      }
+
+      // Case 2: If after number and space, user types "f", suggest "from"
+      if (restOfInput === "f") {
+        return `${amount} from`;
+      }
+
+      // Case 3a: After "on" and category text, suggest "for"
+      if (restOfInput.startsWith("on ") && restOfInput.length > 3) {
+        const afterOn = restOfInput.substring(3);
+        // If there's text after "on " but no "for" yet, suggest "for"
+        if (afterOn && !afterOn.includes("for")) {
+          return `${amount} on ${afterOn} for`;
+        }
+      }
+
+      // Case 3b: After "from" and category text, suggest "for"
+      if (restOfInput.startsWith("from ") && restOfInput.length > 5) {
+        const afterFrom = restOfInput.substring(5);
+        // If there's text after "from " but no "for" yet, suggest "for"
+        if (afterFrom && !afterFrom.includes("for")) {
+          return `${amount} from ${afterFrom} for`;
+        }
+      }
+    }
+
+    return "";
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setTextInput(value);
+
+    // Generate inline suggestion
+    const suggestion = generateInlineSuggestion(value);
+    setInlineSuggestion(suggestion);
+  };
+
+  const handleKeyDown = (e) => {
+    // Accept suggestion with Tab key
+    if (e.key === "Tab" && inlineSuggestion && inlineSuggestion !== textInput) {
+      e.preventDefault();
+
+      // If the suggestion ends with just "on" or "from", add a space
+      if (
+        inlineSuggestion.endsWith(" on") ||
+        inlineSuggestion.endsWith(" from")
+      ) {
+        setTextInput(inlineSuggestion + " ");
+      } else {
+        setTextInput(inlineSuggestion);
+      }
+
+      setInlineSuggestion("");
+      return;
+    }
+
+    // Handle Enter for preview
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (textInput.trim()) {
+        handlePreview();
+      }
+    }
+
+    // Clear suggestion on Escape
+    if (e.key === "Escape") {
+      setInlineSuggestion("");
+    }
+  };
+
   if (!hasData) {
     return (
       <div className="homepage">
@@ -329,24 +416,77 @@ function Homepage() {
 
       <div className="add-entries-section">
         <h2>Add New Entries</h2>
-        <div className="input-container">
+        <div className="input-container" style={{ position: "relative" }}>
           <textarea
             id="expense-input"
             name="expense-input"
             value={textInput}
-            onChange={(e) => setTextInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                if (textInput.trim()) {
-                  handlePreview();
-                }
-              }
-            }}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             className="text-input"
-            placeholder="Enter your expenses or income (e.g., '50 on bus', '200 for lunch at restaurant', 'salary received 50000', 'electricity bill 1500')"
+            placeholder="Start typing... e.g., '50 on food for dinner', '200 from grocery store for food'"
             rows={4}
+            style={{
+              position: "relative",
+              backgroundColor: "transparent",
+              color: "var(--text-primary)",
+              zIndex: 2,
+            }}
           />
+
+          {/* Inline suggestion overlay */}
+          {inlineSuggestion && inlineSuggestion !== textInput && (
+            <div
+              style={{
+                position: "absolute",
+                top: "2px", // Account for 2px border
+                left: "2px", // Account for 2px border
+                right: "2px", // Account for 2px border
+                bottom: "2px", // Account for 2px border
+                pointerEvents: "none",
+                padding: "1.5rem", // Match exact textarea padding
+                fontSize: "var(--font-size-base)",
+                fontFamily: "var(--font-family-base)",
+                fontWeight: "var(--font-weight-normal)",
+                lineHeight: "var(--line-height-relaxed)",
+                color: "transparent",
+                whiteSpace: "pre-wrap",
+                overflow: "hidden",
+                zIndex: 1,
+                border: "none",
+                borderRadius: "14px", // Slightly smaller to account for border offset
+                resize: "none",
+                boxSizing: "border-box",
+              }}
+            >
+              <span style={{ color: "transparent" }}>{textInput}</span>
+              <span
+                style={{
+                  color: "var(--text-muted)",
+                  opacity: 0.6,
+                  fontWeight: "var(--font-weight-normal)",
+                }}
+              >
+                {inlineSuggestion.substring(textInput.length)}
+              </span>
+            </div>
+          )}
+
+          {/* Subtle hint */}
+          {inlineSuggestion && inlineSuggestion !== textInput && (
+            <div
+              style={{
+                position: "absolute",
+                bottom: "-20px",
+                right: "0",
+                fontSize: "var(--font-size-xs)",
+                color: "var(--text-muted)",
+                opacity: 0.7,
+              }}
+            >
+              Press Tab to accept
+            </div>
+          )}
         </div>
         <button
           onClick={handlePreview}
