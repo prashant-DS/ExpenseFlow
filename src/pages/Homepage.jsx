@@ -436,7 +436,7 @@ function Homepage() {
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             className="text-input"
-            placeholder="Start typing... e.g., '50 on food for dinner', '200 from grocery store for food'"
+            placeholder="Start typing 'Amount on Category for Description'... e.g., '200 from grocery store for food'"
             style={{
               position: "relative",
               backgroundColor: "transparent",
