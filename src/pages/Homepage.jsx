@@ -697,8 +697,15 @@ function Homepage() {
               </tbody>
             </table>
           </div>
-          <div className="preview-actions">
-            <button onClick={handleAddAll} className="preview-btn">
+          <div
+            className="preview-actions"
+            style={{ display: "flex", justifyContent: "center" }}
+          >
+            <button
+              onClick={handleAddAll}
+              className="preview-btn"
+              style={{ margin: "0" }}
+            >
               Add All Entries to CSV
             </button>
             <button

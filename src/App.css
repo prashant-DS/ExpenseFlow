@@ -122,7 +122,6 @@ body {
   padding-right: 2rem;
   min-height: 64px;
   gap: 2rem;
-  max-width: 1200px;
   margin: 0 auto;
   flex-wrap: wrap;
 }
@@ -261,7 +260,6 @@ button.upload-btn:hover {
 /* Homepage Styles */
 .homepage {
   min-height: calc(100vh - 100px);
-  max-width: 1200px;
   margin: 0 auto;
   padding: 3rem 2rem;
 }
