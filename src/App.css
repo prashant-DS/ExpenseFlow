@@ -787,6 +787,12 @@ textarea.text-input::placeholder {
   border: 1px solid var(--border);
 }
 
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
 .table-section h3 {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
@@ -978,6 +984,19 @@ p,
 
 .btn-primary:hover:not(:disabled) {
   background: var(--primary-dark) !important;
+}
+
+.btn-secondary {
+  background: var(--bg-secondary) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: var(--shadow-md) !important;
 }
 
 .btn-danger {

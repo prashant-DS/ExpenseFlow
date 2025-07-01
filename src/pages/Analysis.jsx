@@ -448,7 +448,7 @@ function Analysis() {
                 </h3>
                 {tableFilter && (
                   <button
-                    className="clear-filter-btn"
+                    className="clear-filter-btn btn btn-secondary btn-sm"
                     onClick={() => setTableFilter(null)}
                     title="Clear category filter"
                   >
