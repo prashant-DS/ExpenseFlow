@@ -24,6 +24,41 @@ function Homepage() {
     return entry ? [entry] : [];
   };
 
+  const parseNoteFromLine = (line) => {
+    const trimmedLine = line.trim();
+
+    // Pattern: "x on y for z" -> return z
+    const onForMatch = trimmedLine.match(
+      /\d+(?:\.\d{2})?\s+on\s+(.+?)\s+for\s+(.+)/i
+    );
+    if (onForMatch) {
+      return onForMatch[2].trim(); // Return the "z" part
+    }
+
+    // Pattern: "x from y for z" -> return z
+    const fromForMatch = trimmedLine.match(
+      /\d+(?:\.\d{2})?\s+from\s+(.+?)\s+for\s+(.+)/i
+    );
+    if (fromForMatch) {
+      return fromForMatch[2].trim(); // Return the "z" part
+    }
+
+    // Pattern: "x on y" -> return y
+    const onMatch = trimmedLine.match(/\d+(?:\.\d{2})?\s+on\s+(.+)/i);
+    if (onMatch) {
+      return onMatch[1].trim(); // Return the "y" part
+    }
+
+    // Pattern: "x from y" -> return y
+    const fromMatch = trimmedLine.match(/\d+(?:\.\d{2})?\s+from\s+(.+)/i);
+    if (fromMatch) {
+      return fromMatch[1].trim(); // Return the "y" part
+    }
+
+    // Fallback: return the entire line if no pattern matches
+    return trimmedLine;
+  };
+
   const parseLineToEntry = (line) => {
     const amountMatch = line.match(/(\d+(?:\.\d{2})?)/);
     const amount = amountMatch ? parseFloat(amountMatch[1]) : 0;
@@ -212,7 +247,9 @@ function Homepage() {
         lowerColumn.includes("description") ||
         lowerColumn.includes("comment")
       ) {
-        entry[column] = line;
+        // Parse note/description/comment based on pattern
+        const noteValue = parseNoteFromLine(line);
+        entry[column] = noteValue;
       } else {
         // For all other columns, try to find the best matching value from CSV data
         const existingValues = getUniqueValuesForColumn(column);
@@ -242,6 +279,7 @@ function Homepage() {
     setPendingEntries((prevEntries) => [...prevEntries, ...parsed]); // Append new entries
     setShowPreview(true);
     setTextInput(""); // Clear the input after preview
+    setInlineSuggestion("");
   };
 
   const handleAddAll = () => {
