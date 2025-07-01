@@ -155,26 +155,14 @@ function Homepage() {
 
         if (exactMatch) return exactMatch;
 
-        // For type column, use expense/income logic based on keywords
-        const incomeKeywords = [
-          "received",
-          "got",
-          "salary",
-          "income",
-          "earn",
-          "bonus",
-          "refund",
-          "paid to me",
-          "credit",
-          "deposit",
-          "transfer in",
-        ];
+        // For type column, check the word immediately after the number
+        const amountMatch = lowerLine.match(/(\d+(?:\.\d{2})?)\s+(\w+)/);
+        let type = "-"; // Default to expense
 
-        const type = incomeKeywords.some((keyword) =>
-          lowerLine.includes(keyword)
-        )
-          ? "+"
-          : "-";
+        if (amountMatch && amountMatch[2] === "from") {
+          type = "+";
+        }
+
         return existingValues.find((value) => {
           if (!value) return false;
           const lowerValue = value.toLowerCase();
