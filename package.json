@@ -21,6 +21,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.12.2",
+    "googleapis": "^150.0.1",
     "papaparse": "^5.5.3",
     "plotly.js-dist-min": "^3.0.1",
     "react": "^19.1.0",

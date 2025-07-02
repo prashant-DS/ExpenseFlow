@@ -5,21 +5,16 @@ import {
   Link,
   useLocation,
 } from "react-router-dom";
+import { useEffect } from "react";
+import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 import { CsvProvider, useCsv } from "./customHooks/useCsv";
 import Homepage from "./pages/Homepage";
 import Analysis from "./pages/Analysis";
 import "./App.css";
 
 function NavBar() {
-  const { csvFile, loadCsvFile, clearData, hasData } = useCsv();
+  const { csvFile, clearData, hasData } = useCsv();
   const location = useLocation();
-
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      loadCsvFile(file);
-    }
-  };
 
   return (
     <nav className="navbar">
@@ -46,34 +41,16 @@ function NavBar() {
         </div>
 
         <div className="nav-right">
-          <div className="csv-controls">
-            {!hasData ? (
-              <div className="upload-section">
-                <button
-                  className="upload-btn"
-                  onClick={() => document.getElementById("csv-upload").click()}
-                >
-                  Upload CSV
-                </button>
-                <input
-                  id="csv-upload"
-                  type="file"
-                  accept=".csv"
-                  onChange={handleFileUpload}
-                  style={{ display: "none" }}
-                />
-              </div>
-            ) : (
-              <div className="csv-status">
-                <span className="csv-info">
-                  {csvFile?.name || "Data Loaded"}
-                </span>
-                <button onClick={clearData} className="clear-btn">
-                  ×
-                </button>
-              </div>
-            )}
-          </div>
+          {hasData && (
+            <div className="csv-status">
+              <span className="csv-info">
+                {csvFile?.name || "Google Sheets Data"}
+              </span>
+              <button onClick={clearData} className="clear-btn">
+                ×
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </nav>
@@ -81,28 +58,142 @@ function NavBar() {
 }
 
 function AppContent() {
+  const { isLoading, error, hasData, loadGoogleSheetsData } = useCsv();
+
+  const login = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      console.log("Login successful:", tokenResponse);
+      try {
+        // Store the access token
+        localStorage.setItem("google_access_token", tokenResponse.access_token);
+        localStorage.setItem(
+          "google_token_expiry",
+          (Date.now() + tokenResponse.expires_in * 1000).toString()
+        );
+
+        // Load Google Sheets data
+        await loadGoogleSheetsData(tokenResponse.access_token);
+      } catch (error) {
+        console.error("Failed to load Google Sheets data:", error);
+      }
+    },
+    onError: (error) => {
+      console.error("Login failed:", error);
+    },
+    scope:
+      "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file",
+  });
+
+  const handleSignIn = () => {
+    login();
+  };
+
+  // Auto-trigger login when required
+  useEffect(() => {
+    if (error === "auto_login_required") {
+      console.log("Auto-triggering login...");
+      setTimeout(() => {
+        login();
+      }, 1000); // Small delay to ensure UI is ready
+    }
+  }, [error, login]);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="app">
+        <div className="loading-overlay">
+          <div className="loading-message">
+            <div className="loading-spinner"></div>
+            <p>Loading your data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show sign-in screen if there's an error and no data
+  if (error && !hasData) {
+    return (
+      <div className="app">
+        <div className="error-state">
+          <div className="error-container">
+            <h2>📊 Connect to Google Sheets</h2>
+            <p className="error-message">
+              Sign in with your Google account to access your expense tracking
+              data.
+            </p>
+            <div className="error-actions">
+              <button className="signin-btn" onClick={handleSignIn}>
+                Sign in with Google
+              </button>
+              <p className="help-text">
+                Your data will be stored securely in your Google Sheets.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Only render the full app (including navbar) when we have data
+  if (hasData) {
+    return (
+      <div className="app">
+        <div className="main-app-content">
+          <NavBar />
+          <main className="main-content">
+            <Routes>
+              <Route path="/" element={<Homepage />} />
+              <Route path="/analysis" element={<Analysis />} />
+            </Routes>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback - should not reach here, but just in case
   return (
     <div className="app">
-      <div className="main-app-content">
-        <NavBar />
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Homepage />} />
-            <Route path="/analysis" element={<Analysis />} />
-          </Routes>
-        </main>
+      <div className="loading-overlay">
+        <div className="loading-message">
+          <div className="loading-spinner"></div>
+          <p>Initializing...</p>
+        </div>
       </div>
     </div>
   );
 }
 
 function App() {
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+  if (!clientId) {
+    return (
+      <div className="app">
+        <div className="error-state">
+          <div className="error-container">
+            <h2>⚙️ Configuration Required</h2>
+            <p className="error-message">
+              Google Client ID not configured. Please set VITE_GOOGLE_CLIENT_ID
+              in your .env file.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <CsvProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </CsvProvider>
+    <GoogleOAuthProvider clientId={clientId}>
+      <CsvProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </CsvProvider>
+    </GoogleOAuthProvider>
   );
 }
 
