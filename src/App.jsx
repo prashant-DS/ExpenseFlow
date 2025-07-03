@@ -13,7 +13,6 @@ import Analysis from "./pages/Analysis";
 import "./App.css";
 
 function NavBar() {
-  const { csvFile, clearData, hasData } = useCsv();
   const location = useLocation();
 
   return (
@@ -39,26 +38,13 @@ function NavBar() {
             Analysis
           </Link>
         </div>
-
-        <div className="nav-right">
-          {hasData && (
-            <div className="csv-status">
-              <span className="csv-info">
-                {csvFile?.name || "Google Sheets Data"}
-              </span>
-              <button onClick={clearData} className="clear-btn">
-                ×
-              </button>
-            </div>
-          )}
-        </div>
       </div>
     </nav>
   );
 }
 
 function AppContent() {
-  const { isLoading, error, hasData, loadGoogleSheetsData } = useCsv();
+  const { isLoading, error, loadGoogleSheetsData } = useCsv();
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -113,7 +99,7 @@ function AppContent() {
   }
 
   // Show sign-in screen if there's an error and no data
-  if (error && !hasData) {
+  if (error) {
     return (
       <div className="app">
         <div className="error-state">
@@ -138,30 +124,17 @@ function AppContent() {
   }
 
   // Only render the full app (including navbar) when we have data
-  if (hasData) {
-    return (
-      <div className="app">
-        <div className="main-app-content">
-          <NavBar />
-          <main className="main-content">
-            <Routes>
-              <Route path="/" element={<Homepage />} />
-              <Route path="/analysis" element={<Analysis />} />
-            </Routes>
-          </main>
-        </div>
-      </div>
-    );
-  }
 
-  // Fallback - should not reach here, but just in case
   return (
     <div className="app">
-      <div className="loading-overlay">
-        <div className="loading-message">
-          <div className="loading-spinner"></div>
-          <p>Initializing...</p>
-        </div>
+      <div className="main-app-content">
+        <NavBar />
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<Homepage />} />
+            <Route path="/analysis" element={<Analysis />} />
+          </Routes>
+        </main>
       </div>
     </div>
   );
