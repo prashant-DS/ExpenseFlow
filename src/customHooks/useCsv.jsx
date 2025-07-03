@@ -1,7 +1,11 @@
 import { useState, useContext, useEffect } from "react";
 import Papa from "papaparse";
 import { CsvContext } from "./csvContext";
-import { GOOGLE_SHEETS_CONFIG } from "../constants/googleSheets";
+import {
+  GOOGLE_SHEETS_CONFIG,
+  GOOGLE_SHEETS_TAB_NAMES,
+} from "../constants/googleSheets";
+import { ColumnNames, CSV_CONFIG } from "../constants/csvConfig";
 
 // Simple Google Sheets API functions
 const loadGoogleSheetsAPI = async () => {
@@ -55,7 +59,12 @@ const createSpreadsheet = async (accessToken) => {
     sheets: [
       {
         properties: {
-          title: "Sheet1",
+          title: GOOGLE_SHEETS_TAB_NAMES.DATA,
+        },
+      },
+      {
+        properties: {
+          title: GOOGLE_SHEETS_TAB_NAMES.CATEGORIES,
         },
       },
     ],
@@ -63,13 +72,24 @@ const createSpreadsheet = async (accessToken) => {
 
   const spreadsheetId = createResponse.result.spreadsheetId;
 
-  // Add headers
-  await window.gapi.client.sheets.spreadsheets.values.update({
-    spreadsheetId: spreadsheetId,
-    range: "A1:E1",
-    valueInputOption: "RAW",
+  await window.gapi.client.sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId,
     resource: {
-      values: [GOOGLE_SHEETS_CONFIG.columns],
+      valueInputOption: "RAW",
+      data: [
+        {
+          range: `${GOOGLE_SHEETS_TAB_NAMES.DATA}!A1:E1`,
+          values: [CSV_CONFIG.columns],
+        },
+        {
+          range: `${GOOGLE_SHEETS_TAB_NAMES.CATEGORIES}!A1:E1`,
+          values: [CSV_CONFIG.incomeCategories],
+        },
+        {
+          range: `${GOOGLE_SHEETS_TAB_NAMES.CATEGORIES}!A2:I2`,
+          values: [CSV_CONFIG.expenseCategories],
+        },
+      ],
     },
   });
 
@@ -79,22 +99,30 @@ const createSpreadsheet = async (accessToken) => {
 const readSheet = async (spreadsheetId, accessToken) => {
   window.gapi.client.setToken({ access_token: accessToken });
 
-  const response = await window.gapi.client.sheets.spreadsheets.values.get({
-    spreadsheetId: spreadsheetId,
-    range: "A:Z",
-  });
+  const response = await window.gapi.client.sheets.spreadsheets.values.batchGet(
+    {
+      spreadsheetId,
+      ranges: [
+        `${GOOGLE_SHEETS_TAB_NAMES.DATA}!A:Z`,
+        `${GOOGLE_SHEETS_TAB_NAMES.CATEGORIES}!1:2`,
+      ],
+    }
+  );
 
-  return response.result.values || [];
+  const ranges = response.result.valueRanges;
+
+  return {
+    sheet1: ranges[0].values || [],
+    sheet2: ranges[1].values || [],
+  };
 };
 
 const convertToCsvData = (sheetData) => {
-  if (!sheetData || sheetData.length === 0) {
-    return { headers: GOOGLE_SHEETS_CONFIG.columns, rows: [] };
-  }
+  const { sheet1 = [], sheet2 = [] } = sheetData;
 
-  const headers = sheetData[0] || GOOGLE_SHEETS_CONFIG.columns;
-  const rows = sheetData.slice(1);
+  const headers = sheet1[0];
 
+  const rows = sheet1.slice(1);
   const parsedData = rows
     .filter((row) => row && row.some((cell) => cell && cell.toString().trim()))
     .map((row) => {
@@ -105,25 +133,24 @@ const convertToCsvData = (sheetData) => {
       return obj;
     });
 
-  return { headers, rows: parsedData };
+  const incomeCategories = sheet2[0];
+  const expenseCategories = sheet2[1];
+
+  return { headers, rows: parsedData, incomeCategories, expenseCategories };
 };
 
 export const CsvProvider = ({ children }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [csvData, setCsvData] = useState([]);
   const [csvColumns, setCsvColumns] = useState([]);
-  const [csvFile, setCsvFile] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [autoLoadAttempted, setAutoLoadAttempted] = useState(false);
-  const [error, setError] = useState(null);
+  const [incomeCategories, setIncomeCategories] = useState([]);
+  const [expenseCategories, setExpenseCategories] = useState([]);
+  const [spreadsheetId, setSpreadsheetId] = useState(null);
 
   // Check for existing token on app startup
   useEffect(() => {
     const checkExistingAuth = async () => {
-      if (autoLoadAttempted || csvData.length > 0) {
-        return;
-      }
-
-      setAutoLoadAttempted(true);
       setIsLoading(true);
 
       try {
@@ -156,7 +183,7 @@ export const CsvProvider = ({ children }) => {
     };
 
     checkExistingAuth();
-  }, [autoLoadAttempted, csvData.length]);
+  }, []);
 
   const loadGoogleSheetsData = async (accessToken) => {
     try {
@@ -179,15 +206,15 @@ export const CsvProvider = ({ children }) => {
 
       // Load data
       const sheetData = await readSheet(spreadsheetId, accessToken);
-      const { headers, rows } = convertToCsvData(sheetData);
+      const { headers, rows, incomeCategories, expenseCategories } =
+        convertToCsvData(sheetData);
 
+      setSpreadsheetId(spreadsheetId);
       // Set data
       setCsvColumns(headers);
       setCsvData(rows);
-      setCsvFile({
-        name: GOOGLE_SHEETS_CONFIG.fileName + ".csv",
-      });
-
+      setIncomeCategories(incomeCategories);
+      setExpenseCategories(expenseCategories);
       setIsLoading(false);
       console.log("Successfully loaded Google Sheets data");
     } catch (error) {
@@ -197,107 +224,56 @@ export const CsvProvider = ({ children }) => {
     }
   };
 
-  const addNewEntry = (entry) => {
-    const newData = [...csvData, entry];
-    setCsvData(newData);
-    updateCsvFile(newData);
-  };
-
-  const addMultipleEntries = (entries) => {
-    const newData = [...csvData, ...entries];
-    setCsvData(newData);
-    updateCsvFile(newData);
-  };
-
-  const updateCsvFile = (data) => {
-    if (csvColumns.length === 0) return;
-
-    const csvContent = Papa.unparse(data, {
-      columns: csvColumns,
-    });
-
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = csvFile?.name || "expense-flow-data.csv";
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
-
-  const clearData = () => {
-    setCsvData([]);
-    setCsvColumns([]);
-    setCsvFile(null);
-    setError(null);
-    setAutoLoadAttempted(false);
-    // Clear stored tokens
-    localStorage.removeItem("google_access_token");
-    localStorage.removeItem("google_token_expiry");
-  };
-
-  const getUniqueValuesForColumn = (columnName) => {
-    if (!csvData.length || !columnName) return [];
-
-    const values = csvData
-      .map((row) => row[columnName])
-      .filter((value) => value && value.toString().trim() !== "")
-      .map((value) => value.toString().trim());
-
-    return [...new Set(values)].sort();
-  };
-
-  const getColumnOptions = (columnName) => {
-    const lowerColumn = columnName.toLowerCase();
-
-    // For notes/comments columns, return empty array (no dropdown)
-    if (
-      lowerColumn.includes("note") ||
-      lowerColumn.includes("description") ||
-      lowerColumn.includes("comment") ||
-      lowerColumn.includes("memo")
-    ) {
-      return [];
+  const addEntriesToCsv = async (entries) => {
+    if (!entries || entries.length === 0) {
+      console.log("No entries to add");
+      return;
     }
 
-    // For specific columns, return unique values from CSV
-    if (
-      lowerColumn.includes("category") ||
-      lowerColumn.includes("type") ||
-      lowerColumn.includes("account")
-    ) {
-      return getUniqueValuesForColumn(columnName);
+    try {
+      // Convert entries to the format expected by Google Sheets
+      const values = entries.map((entry) => [
+        entry[ColumnNames.DATE] ?? "",
+        entry[ColumnNames.TYPE] ?? "",
+        entry[ColumnNames.AMOUNT] ?? "",
+        entry[ColumnNames.CATEGORY] ?? "",
+        entry[ColumnNames.DESCRIPTION] || "",
+      ]);
+
+      // Append the entries to the sheet
+      await window.gapi.client.sheets.spreadsheets.values.append({
+        spreadsheetId,
+        range: `${GOOGLE_SHEETS_TAB_NAMES.DATA}!A:E`,
+        valueInputOption: "RAW",
+        insertDataOption: "INSERT_ROWS",
+        resource: {
+          values: values,
+        },
+      });
+
+      // Update local state by adding the new entries
+      setCsvData((prevData) => [...prevData, ...entries]);
+
+      console.log(
+        `Successfully added ${entries.length} entries to the spreadsheet`
+      );
+    } catch (error) {
+      console.error("Failed to add entries to CSV:", error);
+      setError("Failed to add entries: " + error.message);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-
-    // For other text columns (excluding date, amount, time), return unique values from CSV
-    if (
-      !lowerColumn.includes("date") &&
-      !lowerColumn.includes("amount") &&
-      !lowerColumn.includes("time")
-    ) {
-      return getUniqueValuesForColumn(columnName);
-    }
-
-    return [];
-  };
-
-  const isStrictDropdown = (columnName) => {
-    const lowerColumn = columnName.toLowerCase();
-    return lowerColumn.includes("category") || lowerColumn.includes("type");
   };
 
   const value = {
-    csvData,
-    csvColumns,
-    csvFile,
     isLoading,
     error,
-    addNewEntry,
-    addMultipleEntries,
-    clearData,
-    getUniqueValuesForColumn,
-    getColumnOptions,
-    isStrictDropdown,
+    csvData,
+    csvColumns,
+    incomeCategories,
+    expenseCategories,
+    addEntriesToCsv,
     hasData: csvData.length > 0,
     hasColumns: csvColumns.length > 0,
     loadGoogleSheetsData,
