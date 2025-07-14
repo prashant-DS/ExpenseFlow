@@ -18,11 +18,6 @@ function View() {
       : `₹${num.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
   };
 
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return isNaN(date) ? dateStr : date.toLocaleDateString("en-IN");
-  };
-
   if (!hasData) {
     return (
       <div className="view-page">
@@ -57,8 +52,6 @@ function View() {
                 >
                   {column.toLowerCase().includes("amount")
                     ? formatAmount(row[column])
-                    : column.toLowerCase().includes("date")
-                    ? formatDate(row[column])
                     : row[column] || ""}
                 </td>
               ))}

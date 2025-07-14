@@ -6,6 +6,40 @@
   }
 
   .dashboard-container {
+    .date-filter-section {
+      .date-inputs {
+        .date-input-group {
+          &:first-child {
+            .month-select {
+              width: 100%;
+              padding: 0.5rem;
+              border: 1px solid var(--border-color, #374151);
+              border-radius: 6px;
+              background-color: var(--bg-secondary, #1f2937);
+              color: var(--text-primary, #f9fafb);
+              font-size: 0.9rem;
+              outline: none;
+
+              &:focus {
+                border-color: var(--primary-color, #6366f1);
+                box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+              }
+
+              &:hover {
+                border-color: var(--border-hover, #4b5563);
+              }
+
+              option {
+                background-color: var(--bg-secondary, #1f2937);
+                color: var(--text-primary, #f9fafb);
+                padding: 0.5rem;
+              }
+            }
+          }
+        }
+      }
+    }
+
     .table-section {
       .no-data-message {
         text-align: center;

@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useCsv } from "../customHooks/useCsv";
+import { ColumnNames, TransactionType } from "../constants/csvConfig";
 import Plotly from "plotly.js-dist-min";
 import "./Analysis.scss";
 
 function Analysis() {
-  const { csvData, csvColumns, hasData } = useCsv();
+  const { csvData, hasData } = useCsv();
   const [currentMode, setCurrentMode] = useState("expense");
   const [selectedCategories, setSelectedCategories] = useState(new Set());
   const [filteredData, setFilteredData] = useState([]);
@@ -39,42 +40,19 @@ function Analysis() {
     []
   );
 
-  // Find the appropriate column names based on content
-  const getColumnName = (searchTerms) => {
-    return csvColumns.find((col) =>
-      searchTerms.some((term) => col.toLowerCase().includes(term.toLowerCase()))
-    );
+  // Use our specific column names from csvConfig
+  const amountColumn = ColumnNames.AMOUNT;
+  const typeColumn = ColumnNames.TYPE;
+  const categoryColumn = ColumnNames.CATEGORY;
+  const notesColumn = ColumnNames.DESCRIPTION;
+  const timeColumn = ColumnNames.DATE;
+
+  // Format date for display (from DD-MM-YYYY to locale format)
+  const formatDateForDisplay = (dateStr) => {
+    if (!dateStr) return "N/A";
+    const date = parseDate(dateStr);
+    return date ? date.toLocaleDateString() : dateStr;
   };
-
-  const amountColumn = getColumnName(["amount", "amt", "price", "value"]);
-  const typeColumn = getColumnName([
-    "type",
-    "transaction_type",
-    "debit_credit",
-  ]);
-  const categoryColumn = getColumnName(["category", "cat", "group", "tag"]);
-  const notesColumn = getColumnName([
-    "note",
-    "description",
-    "comment",
-    "memo",
-    "details",
-  ]);
-  const timeColumn = getColumnName(["time", "date", "timestamp", "created"]);
-
-  // Debug logging
-  console.log("CSV Data sample:", csvData.slice(0, 3));
-  console.log("CSV Columns:", csvColumns);
-  console.log("Detected columns:", {
-    amountColumn,
-    typeColumn,
-    categoryColumn,
-    notesColumn,
-    timeColumn,
-  });
-  console.log("Current mode:", currentMode);
-  console.log("Selected categories:", selectedCategories);
-  console.log("Filtered data length:", filteredData.length);
 
   const formatIndianNumber = (num) => {
     if (num >= 10000000) {
@@ -88,9 +66,21 @@ function Analysis() {
     }
   };
 
-  // Helper function to parse and validate dates
+  // Helper function to parse dates in DD-MM-YYYY format
   const parseDate = (dateStr) => {
     if (!dateStr) return null;
+
+    // Handle DD-MM-YYYY format
+    const parts = dateStr.split("-");
+    if (parts.length === 3) {
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
+      const year = parseInt(parts[2], 10);
+      const date = new Date(year, month, day);
+      return isNaN(date.getTime()) ? null : date;
+    }
+
+    // Fallback to standard parsing
     const date = new Date(dateStr);
     return isNaN(date.getTime()) ? null : date;
   };
@@ -106,10 +96,55 @@ function Analysis() {
 
     if (dates.length === 0) return { min: "", max: "" };
 
+    // Convert to YYYY-MM-DD format for HTML date inputs
     const minDate = dates[0].toISOString().split("T")[0];
     const maxDate = dates[dates.length - 1].toISOString().split("T")[0];
 
     return { min: minDate, max: maxDate };
+  }, [csvData, timeColumn]);
+
+  // Get available months from the data for the month selector
+  const getAvailableMonths = useMemo(() => {
+    if (!csvData.length || !timeColumn) return [];
+
+    const months = new Set();
+    csvData.forEach((item) => {
+      const date = parseDate(item[timeColumn]);
+      if (date) {
+        const year = date.getFullYear();
+        const month = date.getMonth(); // 0-indexed
+        const monthKey = `${year}-${String(month + 1).padStart(2, "0")}`;
+        months.add(monthKey);
+      }
+    });
+
+    // Convert to array and sort chronologically
+    const sortedMonths = Array.from(months).sort();
+
+    // Convert to display format
+    const monthNames = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
+    return sortedMonths.map((monthKey) => {
+      const [year, month] = monthKey.split("-");
+      const monthIndex = parseInt(month) - 1;
+      return {
+        value: monthKey,
+        label: `${monthNames[monthIndex]} ${year}`,
+      };
+    });
   }, [csvData, timeColumn]);
 
   // Initialize date range when CSV data changes
@@ -156,10 +191,12 @@ function Analysis() {
     const counts = {};
     csvData
       .filter((item) => {
-        // Handle different type formats - check for substring containing + or -
+        // Check exact transaction type match
         const type = String(item[typeColumn] || "");
         const matchesType =
-          currentMode === "income" ? type.includes("+") : type.includes("-");
+          currentMode === "income"
+            ? type === TransactionType.INCOME
+            : type === TransactionType.EXPENSE;
 
         // Check date range if timeColumn exists
         const matchesDate = !timeColumn || isDateInRange(item[timeColumn]);
@@ -195,7 +232,13 @@ function Analysis() {
       selectedCategories.has(item.category)
     );
 
-    if (categoryTotals.length === 0) return;
+    if (categoryTotals.length === 0) {
+      // Clear the chart when no data is available
+      if (plotRef.current) {
+        Plotly.purge(plotRef.current);
+      }
+      return;
+    }
 
     const trace = {
       type: "pie",
@@ -237,20 +280,16 @@ function Analysis() {
 
   useEffect(() => {
     if (csvData.length > 0 && typeColumn && categoryColumn) {
-      // Get all possible values for type column to understand the format
-      const typeValues = [...new Set(csvData.map((item) => item[typeColumn]))];
-      console.log("Type values found:", typeValues);
-
       const categories = [
         ...new Set(
           csvData
             .filter((item) => {
-              // Handle different type formats - check for substring containing + or -
+              // Check exact transaction type match
               const type = String(item[typeColumn] || "");
               const matchesType =
                 currentMode === "income"
-                  ? type.includes("+")
-                  : type.includes("-");
+                  ? type === TransactionType.INCOME
+                  : type === TransactionType.EXPENSE;
               const matchesDate =
                 !timeColumn || isDateInRange(item[timeColumn]);
 
@@ -273,10 +312,12 @@ function Analysis() {
   useEffect(() => {
     if (csvData.length > 0 && typeColumn && categoryColumn) {
       const filtered = csvData.filter((item) => {
-        // Handle different type formats - check for substring containing + or -
+        // Check exact transaction type match
         const type = String(item[typeColumn] || "");
         const matchesMode =
-          currentMode === "income" ? type.includes("+") : type.includes("-");
+          currentMode === "income"
+            ? type === TransactionType.INCOME
+            : type === TransactionType.EXPENSE;
         const matchesCategory = selectedCategories.has(item[categoryColumn]);
         const matchesTableFilter =
           !tableFilter || item[categoryColumn] === tableFilter;
@@ -422,29 +463,6 @@ function Analysis() {
     );
   }
 
-  // Show error if required columns are not detected
-  if (!amountColumn || !typeColumn || !categoryColumn) {
-    return (
-      <div className="analysis">
-        <div className="empty-state">
-          <div className="empty-icon">⚠️</div>
-          <h2>Column Detection Issue</h2>
-          <p>Unable to detect required columns in your CSV file.</p>
-          <div className="empty-state">
-            <h3>Required columns:</h3>
-            <ul>
-              <li>Amount column: {amountColumn || "❌ Not found"}</li>
-              <li>Type column: {typeColumn || "❌ Not found"}</li>
-              <li>Category column: {categoryColumn || "❌ Not found"}</li>
-            </ul>
-            <h3>Available columns in your CSV:</h3>
-            <p>{csvColumns.join(", ")}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="analysis">
       <div className="dashboard-container">
@@ -490,6 +508,31 @@ function Analysis() {
             <div className="date-filter-section">
               <h3>Date Range Filter</h3>
               <div className="date-inputs">
+                <div className="date-input-group">
+                  <label htmlFor="month-select">Quick Select:</label>
+                  <select
+                    id="month-select"
+                    className="month-select"
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        const [year, month] = e.target.value.split("-");
+                        const startDate = `${year}-${month}-01`;
+                        const endDate = new Date(year, month, 0)
+                          .toISOString()
+                          .split("T")[0]; // Last day of month
+                        setDateRange({ startDate, endDate });
+                      }
+                    }}
+                    defaultValue=""
+                  >
+                    <option value="">Select month...</option>
+                    {getAvailableMonths.map((monthOption) => (
+                      <option key={monthOption.value} value={monthOption.value}>
+                        {monthOption.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div className="date-input-group">
                   <label htmlFor="start-date">From:</label>
                   <input
@@ -674,11 +717,7 @@ function Analysis() {
                   <tbody>
                     {sortedTableData.map((item, index) => (
                       <tr key={index}>
-                        <td>
-                          {timeColumn && item[timeColumn]
-                            ? new Date(item[timeColumn]).toLocaleDateString()
-                            : "N/A"}
-                        </td>
+                        <td>{formatDateForDisplay(item[timeColumn])}</td>
                         <td className={`amount ${currentMode}`}>
                           ₹
                           {parseFloat(item[amountColumn] || 0).toLocaleString(
