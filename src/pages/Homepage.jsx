@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useCsv } from "../customHooks/useCsv";
 import { parseMultipleEntries } from "../utils/stringParser";
 import "./Homepage.scss";
@@ -192,6 +193,9 @@ Return an array of objects with these exact field names: ${csvColumns.join(
               <p>No entries found. Add your first entry below!</p>
             </div>
           )}
+          <Link to="/view" className="preview-btn view-all-btn">
+            View All
+          </Link>
         </div>
 
         <div className="add-entries-section">

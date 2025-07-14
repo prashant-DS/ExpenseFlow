@@ -16,17 +16,28 @@
     padding: 1.5rem;
     box-shadow: var(--shadow-lg);
     border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 
     h2 {
       margin-bottom: 1rem;
-      text-align: center;
+      color: var(--text-primary);
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .view-all-btn {
+      margin-top: 1rem;
+      background: var(--bg-tertiary);
+      box-shadow: var(--shadow-sm);
     }
 
     .latest-entries-container {
       overflow-x: auto;
       border-radius: 12px;
       border: 1px solid var(--border);
-      background-color: var(--background-subtle);
+      background-color: var(--bg-primary);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       max-height: 400px;
       overflow-y: auto;
@@ -38,7 +49,7 @@
       min-width: 500px;
 
       thead {
-        background-color: var(--background);
+        background-color: var(--bg-secondary);
         position: sticky;
         top: 0;
         z-index: 1;
@@ -65,7 +76,7 @@
           transition: background-color 0.2s;
 
           &:hover {
-            background-color: var(--background);
+            background-color: var(--bg-secondary);
           }
 
           &:last-child {
@@ -99,7 +110,7 @@
       text-align: center;
       padding: 1.5rem;
       color: var(--text-muted);
-      background-color: var(--background-subtle);
+      background-color: var(--bg-primary);
       border-radius: 12px;
       border: 1px solid var(--border);
 
@@ -185,7 +196,7 @@
     width: 100%;
     margin-bottom: 2rem;
     padding: 1rem;
-    background-color: var(--background-subtle);
+    background-color: var(--bg-primary);
     border-radius: 8px;
     border: 1px solid var(--border);
 
@@ -200,7 +211,7 @@
       font-family: var(--font-family-mono, monospace);
       font-size: 0.875rem;
       color: var(--text-primary);
-      background-color: var(--background);
+      background-color: var(--bg-secondary);
       padding: 0.75rem;
       border-radius: 4px;
       font-style: italic;

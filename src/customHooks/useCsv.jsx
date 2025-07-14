@@ -1,5 +1,4 @@
 import { useState, useContext, useEffect } from "react";
-import Papa from "papaparse";
 import { CsvContext } from "./csvContext";
 import {
   GOOGLE_SHEETS_CONFIG,

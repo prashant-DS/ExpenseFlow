@@ -10,6 +10,7 @@ import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 import { CsvProvider, useCsv } from "./customHooks/useCsv";
 import Homepage from "./pages/Homepage";
 import Analysis from "./pages/Analysis";
+import View from "./pages/View";
 import "./App.css";
 
 function NavBar() {
@@ -36,6 +37,14 @@ function NavBar() {
             }`}
           >
             Analysis
+          </Link>
+          <Link
+            to="/view"
+            className={`nav-link ${
+              location.pathname === "/view" ? "active" : ""
+            }`}
+          >
+            View
           </Link>
         </div>
       </div>
@@ -133,6 +142,7 @@ function AppContent() {
           <Routes>
             <Route path="/" element={<Homepage />} />
             <Route path="/analysis" element={<Analysis />} />
+            <Route path="/view" element={<View />} />
           </Routes>
         </main>
       </div>
