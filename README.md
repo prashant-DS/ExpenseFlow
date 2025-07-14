@@ -4,11 +4,12 @@
 
 ![ExpenseFlow Logo](https://img.shields.io/badge/💸-ExpenseFlow-4F46E5?style=for-the-badge)
 
-**Smart expense tracking with natural language processing - just type "50 on coffee" and watch the magic happen!**
+**Smart expense tracking with natural language processing and Google Sheets integration - just type "50 on coffee" and sync seamlessly!**
 
 [![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=flat&logo=react&logoColor=white)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-5.4.0-646CFF?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=flat&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Google Sheets](https://img.shields.io/badge/Google_Sheets-4285F4?style=flat&logo=google-sheets&logoColor=white)](https://developers.google.com/sheets/api)
 [![CSV](https://img.shields.io/badge/CSV-Processing-28A745?style=flat&logo=microsoft-excel&logoColor=white)](https://www.papaparse.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat)](https://opensource.org/licenses/MIT)
 
@@ -19,6 +20,14 @@
 ---
 
 ## 🌟 Features
+
+### ☁️ **Google Sheets Integration**
+
+- **Seamless Cloud Sync** - Connect with Google Sheets for automatic data synchronization
+- **OAuth Authentication** - Secure Google account integration with proper permissions
+- **Real-time Updates** - Changes sync instantly between the app and your Google Sheets
+- **Automatic Backup** - Your data is safely stored in the cloud with Google's reliability
+- **Multi-device Access** - Access your expense data from anywhere with Google Sheets
 
 ### 📊 **Smart Data Visualization**
 
@@ -35,12 +44,13 @@
   - `50 from ATM`
   - `200 grocery shopping`
 
-### 📁 **CSV Integration**
+### 📁 **Data Management**
 
-- **File Upload & Processing** - Upload existing CSV files to import transaction history
-- **Dynamic Column Detection** - Automatically identifies amount, category, date, and note columns
-- **Export Functionality** - Download updated CSV files with new entries
-- **Format Preservation** - Maintains your original CSV structure and formatting
+- **Multiple Data Sources** - Upload CSV files or connect to Google Sheets
+- **Intelligent Column Detection** - Automatically identifies amount, category, date, and note columns
+- **Export Functionality** - Download data as CSV or sync with Google Sheets
+- **Format Preservation** - Maintains your original data structure and formatting
+- **Cloud Backup** - Automatic synchronization with Google Sheets for data safety
 
 ### 🎯 **Smart Form Features**
 
@@ -79,7 +89,15 @@ _Just type naturally - ExpenseFlow understands!_
 "freelance payment 15000"
 ```
 
-### 📊 Powerful Analytics
+### � **Google Sheets Integration**
+
+- 🔐 **Secure OAuth Login** - Connect safely with your Google account
+- ☁️ **Auto-sync** - Real-time synchronization with your Google Sheets
+- 📂 **Smart Sheet Creation** - Automatically creates organized expense tracking sheets
+- 🔄 **Two-way Sync** - Changes in app or sheets are reflected everywhere
+- 🔒 **Data Privacy** - Your financial data stays in your Google account
+
+### �📊 Powerful Analytics
 
 - 📈 **Income vs Expense Analysis**
 - 🏷️ **Category-wise Breakdown**
@@ -125,13 +143,19 @@ npm run preview
 
 ## 🚀 Usage
 
-### 1. **📤 Upload Your CSV File**
+### 1. **� Connect to Google Sheets (Optional)**
+
+- Click "Connect Google Sheets" to enable cloud synchronization
+- Authenticate with your Google account using OAuth
+- ExpenseFlow automatically creates and manages your expense tracking sheets
+
+### 2. **�📤 Upload Your CSV File (Alternative)**
 
 - Click "Upload CSV" in the navigation bar
 - Select your financial data CSV file
 - ExpenseFlow automatically detects columns for amounts, categories, dates, etc.
 
-### 2. **✍️ Add New Expenses**
+### 3. **✍️ Add New Expenses**
 
 Navigate to the "Add Entry" tab and use either:
 
@@ -149,13 +173,14 @@ _The magic of natural language processing!_
 - Use auto-suggestions from existing data
 - Preview before adding
 
-### 3. **📈 Analyze Your Spending**
+### 4. **📈 Analyze Your Spending**
 
 Switch to the "Analysis" tab to:
 
 - 🥧 View spending by category with interactive pie charts
 - 📅 Filter by date ranges
 - 🔄 Toggle between income and expenses
+- ☁️ Sync with Google Sheets for backup
 - 💾 Export updated data
 
 ---
@@ -167,25 +192,33 @@ Switch to the "Analysis" tab to:
 _Modern, fast, and reliable_
 
 ```
-├── ⚛️  React 19.1.0          # UI Framework
-├── 🛣️  React Router 7.6.3    # Navigation
-├── ⚡ Vite 5.4.0           # Build Tool
-├── 📊 Plotly.js 3.0.1      # Data Visualization
-└── 📄 PapaParse 5.5.3      # CSV Processing
+├── ⚛️  React 19.1.0              # UI Framework
+├── 🛣️  React Router 7.6.3        # Navigation
+├── ⚡ Vite 5.4.0               # Build Tool
+├── 📊 Plotly.js 3.0.1          # Data Visualization
+├── � Google OAuth 0.12.2      # Google Authentication
+├── ☁️ Google APIs 150.0.1       # Google Sheets Integration
+└── 🗂️ TypeScript Support        # Type Safety
 ```
 
 ### **📁 Project Structure**
 
 ```
 src/
+├── constants/
+│   ├── csvConfig.ts       # CSV processing configuration
+│   └── googleSheets.js    # Google Sheets API configuration
 ├── customHooks/
-│   ├── csvContext.js     # Context for CSV data management
-│   └── useCsv.jsx       # Custom hook for CSV operations
+│   ├── csvContext.js      # Context for CSV data management
+│   └── useCsv.jsx        # Custom hook for CSV operations
 ├── pages/
-│   ├── Homepage.jsx     # Entry addition interface
-│   └── Analysis.jsx     # Analytics dashboard
-├── App.jsx              # Main application component
-└── main.jsx            # Application entry point
+│   ├── Homepage.jsx      # Entry addition interface
+│   ├── Analysis.jsx      # Analytics dashboard
+│   └── View.jsx          # Data viewing interface
+├── utils/
+│   └── stringParser.js   # Natural language parsing utilities
+├── App.jsx               # Main application component
+└── main.jsx             # Application entry point
 ```
 
 ### **🔧 Key Components**
@@ -287,13 +320,14 @@ npm run dev
 ### **Upcoming Features**
 
 - [ ] 📱 **Mobile App** (React Native)
-- [ ] 🔐 **User Authentication**
-- [ ] ☁️ **Cloud Sync**
-- [ ] 📊 **Advanced Charts** (Line graphs, Bar charts)
-- [ ] 🎯 **Budget Planning**
+- [ ] 🔐 **Enhanced User Authentication**
+- [ ] 📊 **Advanced Charts** (Line graphs, Bar charts, Trends)
+- [ ] 🎯 **Budget Planning & Alerts**
 - [ ] 📧 **Email Reports**
 - [ ] 🔄 **Bank Integration**
 - [ ] 🏷️ **Smart Categorization** (ML-powered)
+- [ ] 🌍 **Multi-currency Support**
+- [ ] 📱 **Offline Mode**
 
 ### **Technical Improvements**
 
@@ -302,6 +336,8 @@ npm run dev
 - [ ] 🔍 **Search Functionality**
 - [ ] 📤 **Multiple Export Formats** (PDF, Excel)
 - [ ] 🌐 **Internationalization**
+- [ ] ⚡ **Performance Optimization**
+- [ ] 🔧 **Advanced Google Sheets Features**
 
 ---
 
@@ -315,8 +351,8 @@ This project is licensed under the MIT License.
 
 **Prashant Kumar**
 
-- � GitHub: [Prashant Kumar](https://github.com/prashant-kumar)
-- � Contact: Available via GitHub
+- 🔗 GitHub: [prashant-DS](https://github.com/prashant-DS)
+- 📧 Contact: Available via GitHub
 
 ---
 
@@ -324,12 +360,21 @@ This project is licensed under the MIT License.
 
 - [React](https://reactjs.org/) - The foundation of our UI
 - [Plotly.js](https://plotly.com/javascript/) - Beautiful data visualizations
-- [PapaParse](https://www.papaparse.com/) - Robust CSV parsing
+- [Google Sheets API](https://developers.google.com/sheets/api) - Cloud synchronization
+- [Google OAuth](https://developers.google.com/identity/protocols/oauth2) - Secure authentication
 - [Vite](https://vitejs.dev/) - Lightning-fast development experience
 
 ---
 
 ## 💡 FAQ
+
+### **Q: What data sources are supported?**
+
+A: ExpenseFlow supports CSV file uploads and Google Sheets integration. You can start with either option or use both for maximum flexibility.
+
+### **Q: How does Google Sheets integration work?**
+
+A: Connect your Google account via OAuth, and ExpenseFlow automatically creates and syncs with a dedicated expense tracking sheet in your Google Drive.
 
 ### **Q: What CSV formats are supported?**
 
@@ -337,11 +382,11 @@ A: The app supports any CSV with financial data. Common formats from banks, expe
 
 ### **Q: Is my financial data secure?**
 
-A: Yes! All processing happens locally in your browser. No data is sent to external servers.
+A: Yes! When using CSV files, all processing happens locally in your browser. With Google Sheets, your data stays in your own Google account with secure OAuth authentication.
 
-### **Q: Can I use this without a CSV file?**
+### **Q: Can I use this without connecting to Google Sheets?**
 
-A: Absolutely! You can start adding expenses immediately using the natural language input or manual forms.
+A: Absolutely! You can use CSV files or start adding expenses immediately using the natural language input or manual forms.
 
 ### **Q: How accurate is the text parsing?**
 
@@ -353,8 +398,8 @@ A: The parser handles most common expense formats. If it doesn't parse correctly
 
 **⭐ Star this repository if you found it helpful!**
 
-Made with ❤️ and ☕ by [Prashant Kumar](https://github.com/prashant-kumar)
+Made with ❤️ and ☕ by [Prashant Kumar](https://github.com/prashant-DS)
 
-_ExpenseFlow - Where natural language meets smart finance tracking_ 💸
+_ExpenseFlow - Where natural language meets smart finance tracking with cloud synchronization_ 💸
 
 </div>
