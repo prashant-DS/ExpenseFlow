@@ -1,17 +1,12 @@
 import { createContext } from "react";
 
 export const CsvContext = createContext({
+  isLoading: false,
+  error: null,
   csvData: [],
   csvColumns: [],
-  csvFile: null,
-  isLoading: false,
-  loadCsvFile: () => {},
-  addNewEntry: () => {},
-  addMultipleEntries: () => {},
-  clearData: () => {},
-  getUniqueValuesForColumn: () => [],
-  getColumnOptions: () => [],
-  isStrictDropdown: () => false,
+  incomeCategories: [],
+  expenseCategories: [],
+  addEntriesToCsv: () => {},
   hasData: false,
-  hasColumns: false,
 });
