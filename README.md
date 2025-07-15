@@ -4,7 +4,7 @@
 
 ![ExpenseFlow Logo](https://img.shields.io/badge/💸-ExpenseFlow-4F46E5?style=for-the-badge)
 
-\*\*Smart exp## 🚀 Usage
+\*\*Smart expense 🚀 Usage
 
 ### 1. **🔗 Connect to Google Sheets**
 
