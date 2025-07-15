@@ -4,7 +4,22 @@
 
 ![ExpenseFlow Logo](https://img.shields.io/badge/💸-ExpenseFlow-4F46E5?style=for-the-badge)
 
-**Smart expense tracking with natural language processing and Google Sheets integration - just type "50 on coffee" and sync seamlessly!**
+\*\*Smart expense 🚀 Usage
+
+### 1. **🔗 Connect to Google Sheets**
+
+- Click "Sign ├── ⚛️ React 19.1.0 # UI Framework
+  ├── 🛣️ React Router 7.6.3 # Navigation
+  ├── ⚡ Vite 5.4.0 # Build Tool
+  ├── 📊 Plotly.js 3.0.1 # Data Visualization
+  ├── 🔗 Google OAuth 0.12.2 # Google Authentication
+  ├── ☁️ Google APIs 150.0.1 # Google Sheets Integration
+  ├── 🗂️ TypeScript Support # Type Safety (Config files)
+  └── 🎨 SASS # Enhanced Styling Google" when you first open the app
+- Authenticate with your Google account using OAuth
+- ExpenseFlow automatically creates and manages your expense tracking sheets
+
+### 2. **✍️ Add New Expenses**ith natural language processing and Google Sheets integration - just type "50 on coffee" and sync seamlessly!\*\*
 
 [![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=flat&logo=react&logoColor=white)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-5.4.0-646CFF?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
