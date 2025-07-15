@@ -1,0 +1,243 @@
+// Footer.scss - Improved styling for the footer component
+.app-footer {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: white;
+  margin-top: auto;
+  padding: 3rem 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
+
+    @media (max-width: 968px) {
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+
+      .footer-section:first-child {
+        grid-column: 1 / -1;
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+    }
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      padding: 0 1.5rem;
+      text-align: center;
+
+      .footer-section:first-child {
+        grid-column: auto;
+        margin-bottom: 0;
+      }
+    }
+
+    .footer-section {
+      h4 {
+        color: #ffffff;
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 1.25rem;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        padding-bottom: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+
+        @media (max-width: 640px) {
+          font-size: 1.1rem;
+        }
+      }
+
+      p {
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.7;
+        margin: 0;
+        font-size: 1rem;
+        max-width: 300px;
+
+        @media (max-width: 640px) {
+          max-width: none;
+          font-size: 0.95rem;
+        }
+      }
+
+      .footer-links {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+
+        .footer-link {
+          color: rgba(255, 255, 255, 0.85);
+          text-decoration: none;
+          transition: all 0.3s ease;
+          padding: 0.5rem 0;
+          border-radius: 6px;
+          font-size: 0.95rem;
+          font-weight: 500;
+          position: relative;
+
+          &::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 0;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.6);
+            transition: width 0.3s ease;
+          }
+
+          &:hover {
+            color: #ffffff;
+            transform: translateX(8px);
+            text-decoration: none;
+
+            &::before {
+              width: 100%;
+            }
+          }
+
+          &:focus {
+            outline: 2px solid rgba(255, 255, 255, 0.6);
+            outline-offset: 3px;
+            border-radius: 4px;
+          }
+        }
+      }
+
+      // Special styling for the first section (app description)
+      &:first-child {
+        h4 {
+          font-size: 1.5rem;
+          background: linear-gradient(45deg, #ffffff, #e0e7ff);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+
+          @media (max-width: 640px) {
+            font-size: 1.3rem;
+          }
+        }
+
+        p {
+          font-size: 1.05rem;
+          font-weight: 400;
+
+          @media (max-width: 640px) {
+            font-size: 1rem;
+          }
+        }
+      }
+    }
+  }
+
+  .footer-bottom {
+    margin-top: 3rem;
+    padding: 1.5rem 0 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    text-align: center;
+    background: rgba(0, 0, 0, 0.1);
+
+    p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.9rem;
+      font-weight: 400;
+
+      @media (max-width: 640px) {
+        font-size: 0.85rem;
+        padding: 0 1rem;
+      }
+
+      a {
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+
+        &:hover {
+          text-decoration: underline;
+          text-decoration-thickness: 2px;
+          text-underline-offset: 2px;
+        }
+      }
+    }
+  }
+}
+
+// Print styles - hide footer when printing
+@media print {
+  .app-footer {
+    display: none;
+  }
+}
+
+// Enhanced dark mode support
+@media (prefers-color-scheme: dark) {
+  .app-footer {
+    background: linear-gradient(135deg, #1e293b 0%, #374151 100%);
+
+    .footer-content .footer-section {
+      h4 {
+        border-bottom-color: rgba(255, 255, 255, 0.3);
+      }
+
+      .footer-links .footer-link {
+        &::before {
+          background: rgba(255, 255, 255, 0.7);
+        }
+      }
+    }
+
+    .footer-bottom {
+      border-top-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+// Accessibility improvements
+@media (prefers-reduced-motion: reduce) {
+  .app-footer {
+    .footer-content .footer-section .footer-links .footer-link {
+      transition: none;
+
+      &:hover {
+        transform: none;
+      }
+    }
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .app-footer {
+    background: #000000;
+
+    .footer-content .footer-section {
+      h4 {
+        border-bottom-color: #ffffff;
+      }
+
+      p,
+      .footer-links .footer-link {
+        color: #ffffff;
+      }
+    }
+
+    .footer-bottom {
+      border-top-color: #ffffff;
+      background: none;
+
+      p,
+      a {
+        color: #ffffff;
+      }
+    }
+  }
+}

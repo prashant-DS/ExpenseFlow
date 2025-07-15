@@ -4,22 +4,7 @@
 
 ![ExpenseFlow Logo](https://img.shields.io/badge/💸-ExpenseFlow-4F46E5?style=for-the-badge)
 
-\*\*Smart expense 🚀 Usage
-
-### 1. **🔗 Connect to Google Sheets**
-
-- Click "Sign ├── ⚛️ React 19.1.0 # UI Framework
-  ├── 🛣️ React Router 7.6.3 # Navigation
-  ├── ⚡ Vite 5.4.0 # Build Tool
-  ├── 📊 Plotly.js 3.0.1 # Data Visualization
-  ├── 🔗 Google OAuth 0.12.2 # Google Authentication
-  ├── ☁️ Google APIs 150.0.1 # Google Sheets Integration
-  ├── 🗂️ TypeScript Support # Type Safety (Config files)
-  └── 🎨 SASS # Enhanced Styling Google" when you first open the app
-- Authenticate with your Google account using OAuth
-- ExpenseFlow automatically creates and manages your expense tracking sheets
-
-### 2. **✍️ Add New Expenses**ith natural language processing and Google Sheets integration - just type "50 on coffee" and sync seamlessly!\*\*
+**Smart expense tracking with natural language processing and Google Sheets integration - just type "50 on coffee" and sync seamlessly!**
 
 [![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=flat&logo=react&logoColor=white)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-5.4.0-646CFF?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
@@ -81,6 +66,14 @@
 - **Clean Interface** - Intuitive navigation with modern design principles
 - **Real-time Feedback** - Instant previews and validations
 - **Dark Mode Ready** - Eye-friendly interface for extended use
+
+### 🔒 **Privacy & Legal Compliance**
+
+- **Google OAuth Verified** - Compliant with Google API Services User Data Policy
+- **Terms of Service** - Comprehensive legal documentation available
+- **Privacy Policy** - Transparent data handling and user rights
+- **No Server Storage** - Your financial data stays in your Google Drive
+- **GDPR Compliant** - Respects user privacy and data rights
 
 ---
 
@@ -229,20 +222,26 @@ _Modern, fast, and reliable_
 
 ```
 src/
+├── components/
+│   ├── Footer.jsx        # Footer component with legal links
+│   └── Footer.scss       # Footer styling
 ├── constants/
-│   ├── csvConfig.ts       # CSV processing configuration
-│   └── googleSheets.js    # Google Sheets API configuration
+│   ├── csvConfig.ts      # CSV processing configuration
+│   └── googleSheets.js   # Google Sheets API configuration
 ├── customHooks/
-│   ├── csvContext.js      # Context for CSV data management
-│   └── useCsv.jsx        # Custom hook for CSV operations
+│   ├── csvContext.js     # Context for CSV data management
+│   └── useCsv.jsx       # Custom hook for CSV operations
 ├── pages/
-│   ├── Homepage.jsx      # Entry addition interface
-│   ├── Analysis.jsx      # Analytics dashboard
-│   └── View.jsx          # Data viewing interface
+│   ├── Homepage.jsx     # Entry addition interface
+│   ├── Analysis.jsx     # Analytics dashboard
+│   ├── View.jsx         # Data viewing interface
+│   ├── LegalTerms.jsx   # Terms of Service page
+│   ├── LegalPrivacy.jsx # Privacy Policy page
+│   └── Legal.scss       # Legal pages styling
 ├── utils/
-│   └── stringParser.js   # Natural language parsing utilities
-├── App.jsx               # Main application component
-└── main.jsx             # Application entry point
+│   └── stringParser.js  # Natural language parsing utilities
+├── App.jsx              # Main application component
+└── main.jsx            # Application entry point
 ```
 
 ### **🔧 Key Components**
@@ -454,7 +453,7 @@ A: The parser handles most common expense formats. If it doesn't parse correctly
 
 **⭐ Star this repository if you found it helpful!**
 
-Made with ❤️ and ☕ by [Prashant Kumar](https://github.com/prashant-DS)
+Made with ❤️, ☕ and 🤖 by [Prashant Kumar](https://github.com/prashant-DS)
 
 _ExpenseFlow - Where natural language meets smart finance tracking with cloud synchronization_ 💸
 
