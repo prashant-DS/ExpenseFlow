@@ -11,6 +11,9 @@ import { CsvProvider, useCsv } from "./customHooks/useCsv";
 import Homepage from "./pages/Homepage";
 import Analysis from "./pages/Analysis";
 import View from "./pages/View";
+import LegalTerms from "./pages/LegalTerms";
+import LegalPrivacy from "./pages/LegalPrivacy";
+import Footer from "./components/Footer";
 import "./App.css";
 
 function NavBar() {
@@ -128,6 +131,7 @@ function AppContent() {
             </div>
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -165,17 +169,30 @@ function App() {
             </p>
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   return (
     <GoogleOAuthProvider clientId={clientId}>
-      <CsvProvider>
-        <Router>
-          <AppContent />
-        </Router>
-      </CsvProvider>
+      <Router>
+        <Routes>
+          {/* Legal pages - accessible without authentication */}
+          <Route path="/terms-of-service" element={<LegalTerms />} />
+          <Route path="/privacy-policy" element={<LegalPrivacy />} />
+
+          {/* Main app routes - require authentication */}
+          <Route
+            path="/*"
+            element={
+              <CsvProvider>
+                <AppContent />
+              </CsvProvider>
+            }
+          />
+        </Routes>
+      </Router>
     </GoogleOAuthProvider>
   );
 }
