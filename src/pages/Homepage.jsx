@@ -155,6 +155,20 @@ Return an array of objects with these exact field names: ${csvColumns.join(
     setOriginalInputText("");
   };
 
+  const sortEntriesByDate = () => {
+    const sorted = [...pendingEntries].sort((a, b) => {
+      // Convert DD-MM-YYYY string to Date object for comparison
+      const dateA = new Date(
+        a[ColumnNames.DATE].split("-").reverse().join("-")
+      );
+      const dateB = new Date(
+        b[ColumnNames.DATE].split("-").reverse().join("-")
+      );
+      return dateA - dateB; // Sort in ascending order (oldest first)
+    });
+    setPendingEntries(sorted);
+  };
+
   return (
     <div className="homepage">
       <div className="top-section">
@@ -327,6 +341,13 @@ Return an array of objects with these exact field names: ${csvColumns.join(
           </div>
           <div className="preview-actions">
             <div className="action-buttons">
+              <button
+                onClick={sortEntriesByDate}
+                className="secondary-btn"
+                title="Sort entries by date (oldest first)"
+              >
+                Date Sort
+              </button>
               <button
                 onClick={handleAddAll}
                 className="preview-btn"
