@@ -9,6 +9,8 @@ import {
   TransactionType,
 } from "../constants/csvConfig";
 
+import { useEffect } from "react";
+
 function Homepage() {
   const {
     csvColumns,
@@ -22,6 +24,27 @@ function Homepage() {
   const [isLoading, setIsLoading] = useState(false);
   const [originalInputText, setOriginalInputText] = useState("");
   const [uploadStatus, setUploadStatus] = useState(null); // null, 'uploading', 'success', 'error'
+
+  // Restore pending entries and input text from localStorage on mount
+  useEffect(() => {
+    const savedEntries = localStorage.getItem("pendingEntries");
+    const savedInputText = localStorage.getItem("originalInputText");
+    if (savedEntries && !pendingEntries.length) {
+      try {
+        const parsedEntries = JSON.parse(savedEntries);
+        setPendingEntries(parsedEntries);
+        if (savedInputText) {
+          setOriginalInputText(savedInputText);
+        }
+        // Clean up after restoring
+        localStorage.removeItem("pendingEntries");
+        localStorage.removeItem("originalInputText");
+      } catch (e) {
+        localStorage.removeItem("pendingEntries");
+        localStorage.removeItem("originalInputText");
+      }
+    }
+  }, []);
 
   const handlePreview = async () => {
     if (!textInput.trim()) return;
@@ -131,6 +154,12 @@ Return an array of objects with these exact field names: ${csvColumns.join(
     } catch (error) {
       setUploadStatus("error");
       console.error("Failed to upload entries:", error);
+
+      // Save pending entries and input text to localStorage before error screen
+      if (pendingEntries.length > 0) {
+        localStorage.setItem("pendingEntries", JSON.stringify(pendingEntries));
+        localStorage.setItem("originalInputText", originalInputText);
+      }
 
       // Clear error status after 3 seconds
       setTimeout(() => {
