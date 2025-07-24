@@ -20,10 +20,13 @@ function Homepage() {
     csvData,
   } = useCsv();
   const [textInput, setTextInput] = useState("");
+  const [jsonInput, setJsonInput] = useState("");
+  const [inputMode, setInputMode] = useState("text"); // "text" or "json"
   const [pendingEntries, setPendingEntries] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [originalInputText, setOriginalInputText] = useState("");
   const [uploadStatus, setUploadStatus] = useState(null); // null, 'uploading', 'success', 'error'
+  const [showJsonExample, setShowJsonExample] = useState(false);
 
   // Restore pending entries and input text from localStorage on mount
   useEffect(() => {
@@ -47,10 +50,45 @@ function Homepage() {
   }, []);
 
   const handlePreview = async () => {
-    if (!textInput.trim()) return;
+    if (inputMode === "text" && !textInput.trim()) return;
+    if (inputMode === "json" && !jsonInput.trim()) return;
 
     setIsLoading(true);
-    // Store the original input text before clearing
+
+    // Handle JSON mode - directly parse and populate
+    if (inputMode === "json") {
+      try {
+        const parsedJson = JSON.parse(jsonInput);
+        const entriesArray = Array.isArray(parsedJson)
+          ? parsedJson
+          : [parsedJson];
+
+        // Validate that entries have the required structure
+        const validatedEntries = entriesArray.map((entry) => {
+          const validatedEntry = {};
+          csvColumns.forEach((column) => {
+            validatedEntry[column] = entry[column] || "";
+          });
+          return validatedEntry;
+        });
+
+        setPendingEntries((prevEntries) => [
+          ...prevEntries,
+          ...validatedEntries,
+        ]);
+        setOriginalInputText(`JSON Input: ${jsonInput}`);
+        setJsonInput("");
+        setIsLoading(false);
+        return;
+      } catch (parseError) {
+        console.error("Invalid JSON format:", parseError);
+        alert("Invalid JSON format. Please check your input and try again.");
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    // Store the original input text before clearing (for text mode)
     setOriginalInputText(textInput);
 
     try {
@@ -145,6 +183,7 @@ Return an array of objects with these exact field names: ${csvColumns.join(
       setUploadStatus("success");
       setPendingEntries([]);
       setTextInput("");
+      setJsonInput("");
       setOriginalInputText("");
 
       // Clear success status after 1 second
@@ -243,21 +282,63 @@ Return an array of objects with these exact field names: ${csvColumns.join(
 
         <div className="add-entries-section">
           <h2>Add New Entries</h2>
+
           <div className="input-container">
-            <textarea
-              id="expense-input"
-              name="expense-input"
-              value={textInput}
-              onChange={(e) => setTextInput(e.target.value)}
-              className="text-input"
-              placeholder="Start typing... e.g., '200 from grocery store for food'"
-              rows={4}
-            />
+            <div className="input-mode-toggle">
+              <button
+                className={`toggle-btn ${inputMode === "text" ? "active" : ""}`}
+                onClick={() => setInputMode("text")}
+              >
+                Text
+              </button>
+              <button
+                className={`toggle-btn ${inputMode === "json" ? "active" : ""}`}
+                onClick={() => setInputMode("json")}
+              >
+                JSON
+              </button>
+            </div>
+
+            {inputMode === "json" && (
+              <button
+                className="json-example-icon"
+                onClick={() => setShowJsonExample(true)}
+                title="Show JSON example"
+              >
+                ?
+              </button>
+            )}
+
+            {inputMode === "text" ? (
+              <textarea
+                id="expense-input"
+                name="expense-input"
+                value={textInput}
+                onChange={(e) => setTextInput(e.target.value)}
+                className="text-input"
+                placeholder="Start typing... e.g., '200 from grocery store for food'"
+                rows={4}
+              />
+            ) : (
+              <textarea
+                id="json-input"
+                name="json-input"
+                value={jsonInput}
+                onChange={(e) => setJsonInput(e.target.value)}
+                className="text-input"
+                placeholder="Paste JSON array here..."
+                rows={8}
+              />
+            )}
           </div>
           <button
             onClick={handlePreview}
             className="preview-btn"
-            disabled={!textInput.trim() || isLoading}
+            disabled={
+              (inputMode === "text" && !textInput.trim()) ||
+              (inputMode === "json" && !jsonInput.trim()) ||
+              isLoading
+            }
           >
             {isLoading ? "Processing..." : "Preview Entries"}
           </button>
@@ -388,6 +469,58 @@ Return an array of objects with these exact field names: ${csvColumns.join(
               </button>
               <button onClick={deleteAllEntries} className="delete-all-btn">
                 Delete All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showJsonExample && (
+        <div
+          className="json-popup-overlay"
+          onClick={() => setShowJsonExample(false)}
+        >
+          <div className="json-popup" onClick={(e) => e.stopPropagation()}>
+            <div className="json-popup-header">
+              <h3>JSON Example Format</h3>
+              <button
+                className="json-popup-close"
+                onClick={() => setShowJsonExample(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="json-popup-content">
+              <p>Use this format for your JSON input:</p>
+              <pre className="json-popup-code">
+                {`[
+  {
+    "Amount": 200,
+    "Type": "Expense",
+    "Category": "Food",
+    "Description": "Grocery shopping",
+    "Date": "25-07-2025"
+  }
+]`}
+              </pre>
+              <button
+                className="json-popup-copy-btn"
+                onClick={() => {
+                  const exampleJson = `[
+  {
+    "Amount": 200,
+    "Type": "Expense",
+    "Category": "Food",
+    "Description": "Grocery shopping",
+    "Date": "25-07-2025"
+  }
+]`;
+                  navigator.clipboard.writeText(exampleJson);
+                  alert("Example JSON copied to clipboard!");
+                  setShowJsonExample(false);
+                }}
+              >
+                Copy Example
               </button>
             </div>
           </div>
