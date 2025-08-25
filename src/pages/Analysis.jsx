@@ -118,8 +118,8 @@ function Analysis() {
       }
     });
 
-    // Convert to array and sort chronologically
-    const sortedMonths = Array.from(months).sort();
+    // Convert to array and sort in descending order (newest first)
+    const sortedMonths = Array.from(months).sort().reverse();
 
     // Convert to display format
     const monthNames = [

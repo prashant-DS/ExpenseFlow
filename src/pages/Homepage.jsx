@@ -491,7 +491,14 @@ Return an array of objects with these exact field names: ${csvColumns.join(
               </button>
             </div>
             <div className="json-popup-content">
-              <p>Use this format for your JSON input:</p>
+              <div className="json-context-info">
+                <p><strong>Required Fields:</strong></p>
+                <p>• <strong>Amount:</strong> Number (positive value)</p>
+                <p>• <strong>Type:</strong> <strong>"Income"</strong> or <strong>"Expense"</strong></p>
+                <p>• <strong>Category:</strong> Income (<strong>{incomeCategories.join(", ")}</strong>) | Expense (<strong>{expenseCategories.join(", ")}</strong>)</p>
+                <p>• <strong>Description:</strong> Text (optional)</p>
+                <p>• <strong>Date:</strong> <strong>DD-MM-YYYY</strong> format (today: <strong>{new Date().toLocaleDateString('en-GB')}</strong>)</p>
+              </div>
               <pre className="json-popup-code">
                 {`[
   {
@@ -506,7 +513,21 @@ Return an array of objects with these exact field names: ${csvColumns.join(
               <button
                 className="json-popup-copy-btn"
                 onClick={() => {
-                  const exampleJson = `[
+                  const llmPrompt = `Extract the following fields from natural language expense text and return as JSON:
+
+Field Requirements:
+• Amount: Number (positive value)
+• Type: Must be exactly "Income" or "Expense"
+• Category: Select from available options:
+  - Income: ${incomeCategories.join(", ")}
+  - Expense: ${expenseCategories.join(", ")}
+• Description: Short descriptive text (optional, exclude other field data)
+• Date: Format as DD-MM-YYYY (today's date: ${new Date().toLocaleDateString('en-GB')})
+
+Return an array of objects with these exact field names: ${csvColumns.join(", ")}. Use today's date if no date is mentioned. Respond ONLY in valid JSON format.
+
+Example format:
+[
   {
     "Amount": 200,
     "Type": "Expense",
@@ -515,8 +536,8 @@ Return an array of objects with these exact field names: ${csvColumns.join(
     "Date": "25-07-2025"
   }
 ]`;
-                  navigator.clipboard.writeText(exampleJson);
-                  alert("Example JSON copied to clipboard!");
+                  navigator.clipboard.writeText(llmPrompt);
+                  alert("Complete LLM prompt copied to clipboard!");
                   setShowJsonExample(false);
                 }}
               >
