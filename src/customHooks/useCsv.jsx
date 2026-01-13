@@ -265,6 +265,46 @@ export const CsvProvider = ({ children }) => {
     }
   };
 
+  const updateCategories = async (newIncomeCategories, newExpenseCategories) => {
+    if (!spreadsheetId) {
+      throw new Error("No spreadsheet ID available");
+    }
+
+    try {
+      setIsLoading(true);
+
+      // Update the categories in the Google Sheet
+      await window.gapi.client.sheets.spreadsheets.values.batchUpdate({
+        spreadsheetId,
+        resource: {
+          valueInputOption: "RAW",
+          data: [
+            {
+              range: `${GOOGLE_SHEETS_TAB_NAMES.CATEGORIES}!A1`,
+              values: [newIncomeCategories],
+            },
+            {
+              range: `${GOOGLE_SHEETS_TAB_NAMES.CATEGORIES}!A2`,
+              values: [newExpenseCategories],
+            },
+          ],
+        },
+      });
+
+      // Update local state
+      setIncomeCategories(newIncomeCategories);
+      setExpenseCategories(newExpenseCategories);
+
+      console.log("Successfully updated categories");
+    } catch (error) {
+      console.error("Failed to update categories:", error);
+      setError("Failed to update categories: " + error.message);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const value = {
     isLoading,
     error,
@@ -273,6 +313,7 @@ export const CsvProvider = ({ children }) => {
     incomeCategories,
     expenseCategories,
     addEntriesToCsv,
+    updateCategories,
     hasData: csvData.length > 0,
     hasColumns: csvColumns.length > 0,
     loadGoogleSheetsData,

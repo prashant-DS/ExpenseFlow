@@ -154,7 +154,7 @@ function AppContent() {
   );
 }
 
-function App() {
+function ConfigCheck({ children }) {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   if (!clientId) {
@@ -162,10 +162,11 @@ function App() {
       <div className="app">
         <div className="error-state">
           <div className="error-container">
-            <h2>⚙️ Configuration Required</h2>
+            <h2>⚙️ Setup Required</h2>
             <p className="error-message">
-              Google Client ID not configured. Please set VITE_GOOGLE_CLIENT_ID
-              in your .env file.
+              ExpenseFlow requires Google Sheets integration to store your data.
+              Please contact your administrator or check the setup guide to complete
+              the configuration.
             </p>
           </div>
         </div>
@@ -174,24 +175,32 @@ function App() {
     );
   }
 
+  return children;
+}
+
+function App() {
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
   return (
     <GoogleOAuthProvider clientId={clientId}>
       <Router>
-        <Routes>
-          {/* Legal pages - accessible without authentication */}
-          <Route path="/terms-of-service" element={<LegalTerms />} />
-          <Route path="/privacy-policy" element={<LegalPrivacy />} />
+        <ConfigCheck>
+          <Routes>
+            {/* Legal pages - accessible without authentication */}
+            <Route path="/terms-of-service" element={<LegalTerms />} />
+            <Route path="/privacy-policy" element={<LegalPrivacy />} />
 
-          {/* Main app routes - require authentication */}
-          <Route
-            path="/*"
-            element={
-              <CsvProvider>
-                <AppContent />
-              </CsvProvider>
-            }
-          />
-        </Routes>
+            {/* Main app routes - require authentication */}
+            <Route
+              path="/*"
+              element={
+                <CsvProvider>
+                  <AppContent />
+                </CsvProvider>
+              }
+            />
+          </Routes>
+        </ConfigCheck>
       </Router>
     </GoogleOAuthProvider>
   );

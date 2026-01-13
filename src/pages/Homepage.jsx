@@ -18,6 +18,7 @@ function Homepage() {
     incomeCategories,
     expenseCategories,
     csvData,
+    updateCategories,
   } = useCsv();
   const [textInput, setTextInput] = useState("");
   const [jsonInput, setJsonInput] = useState("");
@@ -27,6 +28,17 @@ function Homepage() {
   const [originalInputText, setOriginalInputText] = useState("");
   const [uploadStatus, setUploadStatus] = useState(null); // null, 'uploading', 'success', 'error'
   const [showJsonExample, setShowJsonExample] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
+  const [newIncomeCategories, setNewIncomeCategories] = useState([]);
+  const [newExpenseCategories, setNewExpenseCategories] = useState([]);
+  const [addingIncomeCategory, setAddingIncomeCategory] = useState(false);
+  const [addingExpenseCategory, setAddingExpenseCategory] = useState(false);
+  const [newIncomeCategoryInput, setNewIncomeCategoryInput] = useState("");
+  const [newExpenseCategoryInput, setNewExpenseCategoryInput] = useState("");
+  const [isUpdatingCategories, setIsUpdatingCategories] = useState(false);
+  const [draftCount, setDraftCount] = useState(0);
+  const [toast, setToast] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState(null);
 
   // Restore pending entries and input text from localStorage on mount
   useEffect(() => {
@@ -47,7 +59,42 @@ function Homepage() {
         localStorage.removeItem("originalInputText");
       }
     }
+
+    // Load draft count
+    const savedDraft = localStorage.getItem("draftEntries");
+    if (savedDraft) {
+      try {
+        const draftEntries = JSON.parse(savedDraft);
+        setDraftCount(draftEntries.length);
+      } catch (e) {
+        console.error("Failed to load draft count:", e);
+        localStorage.removeItem("draftEntries");
+      }
+    }
   }, []);
+
+  const showToast = (message, type = "info") => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast(null);
+    }, 3000);
+  };
+
+  const showConfirmDialog = (config) => {
+    return new Promise((resolve) => {
+      setConfirmDialog({
+        ...config,
+        onConfirm: () => {
+          setConfirmDialog(null);
+          resolve(true);
+        },
+        onCancel: () => {
+          setConfirmDialog(null);
+          resolve(false);
+        },
+      });
+    });
+  };
 
   const handlePreview = async () => {
     if (inputMode === "text" && !textInput.trim()) return;
@@ -82,7 +129,7 @@ function Homepage() {
         return;
       } catch (parseError) {
         console.error("Invalid JSON format:", parseError);
-        alert("Invalid JSON format. Please check your input and try again.");
+        showToast("Invalid JSON format. Please check your input and try again.", "error");
         setIsLoading(false);
         return;
       }
@@ -176,6 +223,17 @@ Return an array of objects with these exact field names: ${csvColumns.join(
   };
 
   const handleAddAll = async () => {
+    const confirmed = await showConfirmDialog({
+      title: "Confirm Add Entries",
+      message: `Are you sure you want to add ${pendingEntries.length} ${
+        pendingEntries.length === 1 ? "entry" : "entries"
+      } to the CSV?`,
+      confirmText: "Add Entries",
+      confirmStyle: "success",
+      cancelText: "Cancel",
+    });
+    if (!confirmed) return;
+
     setUploadStatus("uploading");
 
     try {
@@ -237,6 +295,144 @@ Return an array of objects with these exact field names: ${csvColumns.join(
     setPendingEntries(sorted);
   };
 
+  const handleAddDraft = () => {
+    if (pendingEntries.length === 0) {
+      showToast("No entries to add to draft", "warning");
+      return;
+    }
+
+    try {
+      const existingDraft = localStorage.getItem("draftEntries");
+      let draftEntries = existingDraft ? JSON.parse(existingDraft) : [];
+
+      // Append current entries to existing draft
+      draftEntries = [...draftEntries, ...pendingEntries];
+
+      localStorage.setItem("draftEntries", JSON.stringify(draftEntries));
+      setDraftCount(draftEntries.length);
+      showToast(
+        `Added ${pendingEntries.length} entries to draft. Total: ${draftEntries.length}`,
+        "success"
+      );
+    } catch (e) {
+      console.error("Failed to add to draft:", e);
+      showToast("Failed to add entries to draft", "error");
+    }
+  };
+
+  const handleReplaceDraft = () => {
+    if (pendingEntries.length === 0) {
+      showToast("No entries to save as draft", "warning");
+      return;
+    }
+
+    try {
+      localStorage.setItem("draftEntries", JSON.stringify(pendingEntries));
+      setDraftCount(pendingEntries.length);
+      showToast(`Draft replaced with ${pendingEntries.length} entries`, "success");
+    } catch (e) {
+      console.error("Failed to replace draft:", e);
+      showToast("Failed to replace draft", "error");
+    }
+  };
+
+  const handleClearDraft = async () => {
+    const confirmed = await showConfirmDialog({
+      title: "Clear Draft",
+      message: "Are you sure you want to clear the draft? This cannot be undone.",
+      confirmText: "Clear Draft",
+      confirmStyle: "danger",
+      cancelText: "Cancel",
+    });
+    if (!confirmed) return;
+
+    localStorage.removeItem("draftEntries");
+    setDraftCount(0);
+    showToast("Draft cleared successfully", "success");
+  };
+
+  const handleLoadDraft = () => {
+    try {
+      const savedDraft = localStorage.getItem("draftEntries");
+      if (!savedDraft) {
+        showToast("No draft found", "warning");
+        return;
+      }
+
+      const draftEntries = JSON.parse(savedDraft);
+      // Append to bottom of current pending entries
+      setPendingEntries((prevEntries) => [...prevEntries, ...draftEntries]);
+      showToast(`Loaded ${draftEntries.length} entries from draft`, "success");
+    } catch (e) {
+      console.error("Failed to load draft:", e);
+      showToast("Failed to load draft", "error");
+    }
+  };
+
+  const handleAddIncomeCategory = () => {
+    if (newIncomeCategoryInput.trim()) {
+      setNewIncomeCategories([
+        ...newIncomeCategories,
+        newIncomeCategoryInput.trim(),
+      ]);
+      setNewIncomeCategoryInput("");
+      setAddingIncomeCategory(false);
+    }
+  };
+
+  const handleAddExpenseCategory = () => {
+    if (newExpenseCategoryInput.trim()) {
+      setNewExpenseCategories([
+        ...newExpenseCategories,
+        newExpenseCategoryInput.trim(),
+      ]);
+      setNewExpenseCategoryInput("");
+      setAddingExpenseCategory(false);
+    }
+  };
+
+  const handleRemoveNewCategory = (category, type) => {
+    if (type === "income") {
+      setNewIncomeCategories(
+        newIncomeCategories.filter((cat) => cat !== category)
+      );
+    } else {
+      setNewExpenseCategories(
+        newExpenseCategories.filter((cat) => cat !== category)
+      );
+    }
+  };
+
+  const handleUpdateCategories = async () => {
+    try {
+      setIsUpdatingCategories(true);
+      const updatedIncomeCategories = [
+        ...incomeCategories,
+        ...newIncomeCategories,
+      ];
+      const updatedExpenseCategories = [
+        ...expenseCategories,
+        ...newExpenseCategories,
+      ];
+
+      await updateCategories(updatedIncomeCategories, updatedExpenseCategories);
+
+      // Clear new categories after successful update
+      setNewIncomeCategories([]);
+      setNewExpenseCategories([]);
+
+      showToast("Categories updated successfully!", "success");
+    } catch (error) {
+      console.error("Failed to update categories:", error);
+      showToast("Failed to update categories. Please try again.", "error");
+    } finally {
+      setIsUpdatingCategories(false);
+    }
+  };
+
+  const hasNewCategories =
+    newIncomeCategories.length > 0 || newExpenseCategories.length > 0;
+
   return (
     <div className="homepage">
       <div className="top-section">
@@ -281,7 +477,30 @@ Return an array of objects with these exact field names: ${csvColumns.join(
         </div>
 
         <div className="add-entries-section">
-          <h2>Add New Entries</h2>
+          <div className="section-header">
+            <h2>Add New Entries</h2>
+            {draftCount > 0 && (
+              <span className="draft-indicator">
+                Draft: {draftCount} entries
+                <span className="draft-actions">
+                  <button
+                    onClick={handleLoadDraft}
+                    className="draft-icon-btn load-icon"
+                    title="Load draft entries"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    onClick={handleClearDraft}
+                    className="draft-icon-btn clear-icon"
+                    title="Clear draft"
+                  >
+                    ✕
+                  </button>
+                </span>
+              </span>
+            )}
+          </div>
 
           <div className="input-container">
             <div className="input-mode-toggle">
@@ -331,17 +550,26 @@ Return an array of objects with these exact field names: ${csvColumns.join(
               />
             )}
           </div>
-          <button
-            onClick={handlePreview}
-            className="preview-btn"
-            disabled={
-              (inputMode === "text" && !textInput.trim()) ||
-              (inputMode === "json" && !jsonInput.trim()) ||
-              isLoading
-            }
-          >
-            {isLoading ? "Processing..." : "Preview Entries"}
-          </button>
+          <div className="button-container">
+            <button
+              onClick={() => setShowCategories(true)}
+              className="categories-btn"
+              title="View available categories"
+            >
+              Categories
+            </button>
+            <button
+              onClick={handlePreview}
+              className="preview-btn"
+              disabled={
+                (inputMode === "text" && !textInput.trim()) ||
+                (inputMode === "json" && !jsonInput.trim()) ||
+                isLoading
+              }
+            >
+              {isLoading ? "Processing..." : "Preview Entries"}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -471,6 +699,40 @@ Return an array of objects with these exact field names: ${csvColumns.join(
                 Delete All
               </button>
             </div>
+            <div className="draft-buttons">
+              <button
+                onClick={handleAddDraft}
+                className="draft-btn add-draft-btn"
+                disabled={pendingEntries.length === 0}
+                title="Add current entries to draft"
+              >
+                Add to Draft
+              </button>
+              <button
+                onClick={handleReplaceDraft}
+                className="draft-btn replace-draft-btn"
+                disabled={pendingEntries.length === 0}
+                title="Replace draft with current entries"
+              >
+                Replace Draft
+              </button>
+              <button
+                onClick={handleLoadDraft}
+                className="draft-btn load-draft-btn"
+                disabled={draftCount === 0}
+                title="Load draft entries"
+              >
+                Load Draft {draftCount > 0 && `(${draftCount})`}
+              </button>
+              <button
+                onClick={handleClearDraft}
+                className="draft-btn clear-draft-btn"
+                disabled={draftCount === 0}
+                title="Clear draft entries"
+              >
+                Clear Draft
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -492,12 +754,29 @@ Return an array of objects with these exact field names: ${csvColumns.join(
             </div>
             <div className="json-popup-content">
               <div className="json-context-info">
-                <p><strong>Required Fields:</strong></p>
-                <p>• <strong>Amount:</strong> Number (positive value)</p>
-                <p>• <strong>Type:</strong> <strong>"Income"</strong> or <strong>"Expense"</strong></p>
-                <p>• <strong>Category:</strong> Income (<strong>{incomeCategories.join(", ")}</strong>) | Expense (<strong>{expenseCategories.join(", ")}</strong>)</p>
-                <p>• <strong>Description:</strong> Text (optional)</p>
-                <p>• <strong>Date:</strong> <strong>DD-MM-YYYY</strong> format (today: <strong>{new Date().toLocaleDateString('en-GB')}</strong>)</p>
+                <p>
+                  <strong>Required Fields:</strong>
+                </p>
+                <p>
+                  • <strong>Amount:</strong> Number (positive value)
+                </p>
+                <p>
+                  • <strong>Type:</strong> <strong>"Income"</strong> or{" "}
+                  <strong>"Expense"</strong>
+                </p>
+                <p>
+                  • <strong>Category:</strong> Income (
+                  <strong>{incomeCategories.join(", ")}</strong>) | Expense (
+                  <strong>{expenseCategories.join(", ")}</strong>)
+                </p>
+                <p>
+                  • <strong>Description:</strong> Text (optional)
+                </p>
+                <p>
+                  • <strong>Date:</strong> <strong>DD-MM-YYYY</strong> format
+                  (today:{" "}
+                  <strong>{new Date().toLocaleDateString("en-GB")}</strong>)
+                </p>
               </div>
               <pre className="json-popup-code">
                 {`[
@@ -522,9 +801,13 @@ Field Requirements:
   - Income: ${incomeCategories.join(", ")}
   - Expense: ${expenseCategories.join(", ")}
 • Description: Short descriptive text (optional, exclude other field data)
-• Date: Format as DD-MM-YYYY (today's date: ${new Date().toLocaleDateString('en-GB')})
+• Date: Format as DD-MM-YYYY (today's date: ${new Date().toLocaleDateString(
+                    "en-GB"
+                  )})
 
-Return an array of objects with these exact field names: ${csvColumns.join(", ")}. Use today's date if no date is mentioned. Respond ONLY in valid JSON format.
+Return an array of objects with these exact field names: ${csvColumns.join(
+                    ", "
+                  )}. Use today's date if no date is mentioned. Respond ONLY in valid JSON format.
 
 Example format:
 [
@@ -537,12 +820,228 @@ Example format:
   }
 ]`;
                   navigator.clipboard.writeText(llmPrompt);
-                  alert("Complete LLM prompt copied to clipboard!");
+                  showToast("Complete LLM prompt copied to clipboard!", "success");
                   setShowJsonExample(false);
                 }}
               >
                 Copy Example
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCategories && (
+        <div
+          className="json-popup-overlay"
+          onClick={() => setShowCategories(false)}
+        >
+          <div className="json-popup" onClick={(e) => e.stopPropagation()}>
+            <div className="json-popup-header">
+              <h3>Available Categories</h3>
+              <button
+                className="json-popup-close"
+                onClick={() => setShowCategories(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="json-popup-content">
+              <div className="categories-container">
+                <div className="category-section">
+                  <h4 className="category-type-header">Income Categories</h4>
+                  <div className="category-chips">
+                    {incomeCategories.map((category) => (
+                      <span
+                        key={category}
+                        className="category-chip income-chip"
+                      >
+                        {category}
+                      </span>
+                    ))}
+                    {newIncomeCategories.map((category) => (
+                      <span
+                        key={category}
+                        className="category-chip income-chip new-category"
+                      >
+                        {category}
+                        <button
+                          className="remove-category-btn"
+                          onClick={() =>
+                            handleRemoveNewCategory(category, "income")
+                          }
+                          title="Remove this category"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                    {addingIncomeCategory ? (
+                      <div className="add-category-input">
+                        <input
+                          type="text"
+                          value={newIncomeCategoryInput}
+                          onChange={(e) =>
+                            setNewIncomeCategoryInput(e.target.value)
+                          }
+                          onKeyPress={(e) => {
+                            if (e.key === "Enter") {
+                              handleAddIncomeCategory();
+                            }
+                          }}
+                          placeholder="New category..."
+                          autoFocus
+                        />
+                        <button
+                          onClick={handleAddIncomeCategory}
+                          className="confirm-btn"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => {
+                            setAddingIncomeCategory(false);
+                            setNewIncomeCategoryInput("");
+                          }}
+                          className="cancel-btn"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        className="category-chip add-chip"
+                        onClick={() => setAddingIncomeCategory(true)}
+                      >
+                        +
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="category-section">
+                  <h4 className="category-type-header">Expense Categories</h4>
+                  <div className="category-chips">
+                    {expenseCategories.map((category) => (
+                      <span
+                        key={category}
+                        className="category-chip expense-chip"
+                      >
+                        {category}
+                      </span>
+                    ))}
+                    {newExpenseCategories.map((category) => (
+                      <span
+                        key={category}
+                        className="category-chip expense-chip new-category"
+                      >
+                        {category}
+                        <button
+                          className="remove-category-btn"
+                          onClick={() =>
+                            handleRemoveNewCategory(category, "expense")
+                          }
+                          title="Remove this category"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                    {addingExpenseCategory ? (
+                      <div className="add-category-input">
+                        <input
+                          type="text"
+                          value={newExpenseCategoryInput}
+                          onChange={(e) =>
+                            setNewExpenseCategoryInput(e.target.value)
+                          }
+                          onKeyPress={(e) => {
+                            if (e.key === "Enter") {
+                              handleAddExpenseCategory();
+                            }
+                          }}
+                          placeholder="New category..."
+                          autoFocus
+                        />
+                        <button
+                          onClick={handleAddExpenseCategory}
+                          className="confirm-btn"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => {
+                            setAddingExpenseCategory(false);
+                            setNewExpenseCategoryInput("");
+                          }}
+                          className="cancel-btn"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        className="category-chip add-chip"
+                        onClick={() => setAddingExpenseCategory(true)}
+                      >
+                        +
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {hasNewCategories && (
+                <div className="update-categories-section">
+                  <button
+                    className="update-categories-btn"
+                    onClick={handleUpdateCategories}
+                    disabled={isUpdatingCategories}
+                  >
+                    {isUpdatingCategories ? "Updating..." : "Update Categories"}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <div className={`toast toast-${toast.type}`}>
+          {toast.message}
+        </div>
+      )}
+
+      {confirmDialog && (
+        <div
+          className="json-popup-overlay"
+          onClick={confirmDialog.onCancel}
+        >
+          <div className="json-popup confirm-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="json-popup-header">
+              <h3>{confirmDialog.title}</h3>
+              <button
+                className="json-popup-close"
+                onClick={confirmDialog.onCancel}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="json-popup-content">
+              <p className="confirm-dialog-message">{confirmDialog.message}</p>
+              <div className="confirm-dialog-actions">
+                <button
+                  className="confirm-btn-cancel"
+                  onClick={confirmDialog.onCancel}
+                >
+                  {confirmDialog.cancelText || "Cancel"}
+                </button>
+                <button
+                  className={`confirm-btn-${confirmDialog.confirmStyle || "primary"}`}
+                  onClick={confirmDialog.onConfirm}
+                >
+                  {confirmDialog.confirmText || "Confirm"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
