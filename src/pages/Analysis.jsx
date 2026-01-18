@@ -47,11 +47,10 @@ function Analysis() {
   const notesColumn = ColumnNames.DESCRIPTION;
   const timeColumn = ColumnNames.DATE;
 
-  // Format date for display (from DD-MM-YYYY to locale format)
+  // Format date for display (keep DD-MM-YYYY format to match homepage)
   const formatDateForDisplay = (dateStr) => {
     if (!dateStr) return "N/A";
-    const date = parseDate(dateStr);
-    return date ? date.toLocaleDateString() : dateStr;
+    return dateStr;
   };
 
   const formatIndianNumber = (num) => {
