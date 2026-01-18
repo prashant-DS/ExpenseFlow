@@ -425,6 +425,14 @@ textarea.text-input::placeholder {
   border-bottom: none;
 }
 
+.preview-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.preview-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
 .table-input {
   width: 100%;
   padding: 0.375rem;
