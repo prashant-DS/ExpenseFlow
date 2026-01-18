@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { Link } from "react-router-dom";
 import { useCsv } from "../customHooks/useCsv";
 import { parseMultipleEntries } from "../utils/stringParser";
@@ -8,8 +8,6 @@ import {
   CSV_CONFIG,
   TransactionType,
 } from "../constants/csvConfig";
-
-import { useEffect } from "react";
 
 function Homepage() {
   const {
@@ -459,6 +457,22 @@ Return an array of objects with these exact field names: ${csvColumns.join(
   const hasNewCategories =
     newIncomeCategories.length > 0 || newExpenseCategories.length > 0;
 
+  // Group consecutive entries with the same date (preserve original order)
+  const sortedDateGroups = pendingEntries.reduce((groups, entry) => {
+    const date = entry[ColumnNames.DATE] || "No Date";
+    const lastGroup = groups[groups.length - 1];
+
+    if (!lastGroup || lastGroup[0] !== date) {
+      // Start a new group: [date, [entries]]
+      groups.push([date, [entry]]);
+    } else {
+      // Add to existing group
+      lastGroup[1].push(entry);
+    }
+
+    return groups;
+  }, []);
+
   return (
     <div className="homepage">
       <div className="top-section">
@@ -628,108 +642,124 @@ Return an array of objects with these exact field names: ${csvColumns.join(
                 </tr>
               </thead>
               <tbody>
-                {pendingEntries.map((entry, index) => (
-                  <tr
-                    key={index}
-                    className="preview-row"
-                    onMouseEnter={() => setHoveredRowIndex(index)}
-                    onMouseLeave={() => setHoveredRowIndex(null)}
-                  >
-                    {csvColumns.map((column) => (
-                      <td key={column}>
-                        {column === ColumnNames.AMOUNT ? (
-                          <input
-                            id={`${column}-${index}`}
-                            name={`${column}-${index}`}
-                            type="number"
-                            value={entry[column] || ""}
-                            onChange={(e) =>
-                              updateEntry(
-                                index,
-                                column,
-                                parseFloat(e.target.value) || 0
-                              )
-                            }
-                            className="table-input"
-                          />
-                        ) : column === ColumnNames.CATEGORY ? (
-                          <select
-                            id={`${column}-${index}`}
-                            name={`${column}-${index}`}
-                            value={entry[column] || ""}
-                            onChange={(e) =>
-                              updateEntry(index, column, e.target.value)
-                            }
-                            className="table-input"
-                          >
-                            {(entry[ColumnNames.TYPE] === TransactionType.INCOME
-                              ? incomeCategories
-                              : expenseCategories
-                            ).map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                          </select>
-                        ) : column === ColumnNames.TYPE ? (
-                          <select
-                            id={`${column}-${index}`}
-                            name={`${column}-${index}`}
-                            value={entry[column] || ""}
-                            onChange={(e) =>
-                              updateEntry(index, column, e.target.value)
-                            }
-                            className="table-input"
-                          >
-                            {CSV_CONFIG.transactionTypes.map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <input
-                            id={`${column}-${index}`}
-                            name={`${column}-${index}`}
-                            type="text"
-                            value={entry[column] || ""}
-                            onChange={(e) =>
-                              updateEntry(index, column, e.target.value)
-                            }
-                            className="table-input"
-                            placeholder={`Enter ${column}`}
-                          />
-                        )}
+                {sortedDateGroups.map(([date, entries]) => (
+                  <Fragment key={`date-group-${date}`}>
+                    <tr key={`date-${date}`} className="date-header-row">
+                      <td colSpan={csvColumns.length + 1} className="date-header-cell">
+                        {date}
                       </td>
-                    ))}
-                    <td className="actions-cell">
-                      {hoveredRowIndex === index && (
-                        <>
-                          <button
-                            onClick={() => insertEmptyRow(index, "above")}
-                            className="insert-row-btn above"
-                            title="Add row above"
-                          >
-                            <span className="plus-icon">+</span>
-                          </button>
-                          <button
-                            onClick={() => insertEmptyRow(index, "below")}
-                            className="insert-row-btn below"
-                            title="Add row below"
-                          >
-                            <span className="plus-icon">+</span>
-                          </button>
-                        </>
-                      )}
-                      <button
-                        onClick={() => deleteEntry(index)}
-                        className="delete-entry-btn"
-                        title="Delete this entry"
-                      >
-                        ✕
-                      </button>
-                    </td>
-                  </tr>
+                    </tr>
+                    {entries.map((entry, entryIndex) => {
+                      // Find the original index in pendingEntries for proper update/delete handling
+                      const originalIndex = pendingEntries.findIndex(
+                        (e) => e === entry
+                      );
+                      const isLastInGroup = entryIndex === entries.length - 1;
+                      return (
+                        <tr
+                          key={originalIndex}
+                          className={`preview-row ${isLastInGroup ? 'last-in-group' : ''}`}
+                          onMouseEnter={() => setHoveredRowIndex(originalIndex)}
+                          onMouseLeave={() => setHoveredRowIndex(null)}
+                        >
+                          {csvColumns.map((column) => (
+                            <td key={column}>
+                              {column === ColumnNames.AMOUNT ? (
+                                <input
+                                  id={`${column}-${originalIndex}`}
+                                  name={`${column}-${originalIndex}`}
+                                  type="number"
+                                  value={entry[column] || ""}
+                                  onChange={(e) =>
+                                    updateEntry(
+                                      originalIndex,
+                                      column,
+                                      parseFloat(e.target.value) || 0
+                                    )
+                                  }
+                                  className="table-input"
+                                />
+                              ) : column === ColumnNames.CATEGORY ? (
+                                <select
+                                  id={`${column}-${originalIndex}`}
+                                  name={`${column}-${originalIndex}`}
+                                  value={entry[column] || ""}
+                                  onChange={(e) =>
+                                    updateEntry(originalIndex, column, e.target.value)
+                                  }
+                                  className="table-input"
+                                >
+                                  {(entry[ColumnNames.TYPE] === TransactionType.INCOME
+                                    ? incomeCategories
+                                    : expenseCategories
+                                  ).map((option) => (
+                                    <option key={option} value={option}>
+                                      {option}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : column === ColumnNames.TYPE ? (
+                                <select
+                                  id={`${column}-${originalIndex}`}
+                                  name={`${column}-${originalIndex}`}
+                                  value={entry[column] || ""}
+                                  onChange={(e) =>
+                                    updateEntry(originalIndex, column, e.target.value)
+                                  }
+                                  className="table-input"
+                                >
+                                  {CSV_CONFIG.transactionTypes.map((option) => (
+                                    <option key={option} value={option}>
+                                      {option}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <input
+                                  id={`${column}-${originalIndex}`}
+                                  name={`${column}-${originalIndex}`}
+                                  type="text"
+                                  value={entry[column] || ""}
+                                  onChange={(e) =>
+                                    updateEntry(originalIndex, column, e.target.value)
+                                  }
+                                  className="table-input"
+                                  placeholder={`Enter ${column}`}
+                                />
+                              )}
+                            </td>
+                          ))}
+                          <td className="actions-cell">
+                            {hoveredRowIndex === originalIndex && (
+                              <>
+                                <button
+                                  onClick={() => insertEmptyRow(originalIndex, "above")}
+                                  className="insert-row-btn above"
+                                  title="Add row above"
+                                >
+                                  <span className="plus-icon">+</span>
+                                </button>
+                                <button
+                                  onClick={() => insertEmptyRow(originalIndex, "below")}
+                                  className="insert-row-btn below"
+                                  title="Add row below"
+                                >
+                                  <span className="plus-icon">+</span>
+                                </button>
+                              </>
+                            )}
+                            <button
+                              onClick={() => deleteEntry(originalIndex)}
+                              className="delete-entry-btn"
+                              title="Delete this entry"
+                            >
+                              ✕
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </Fragment>
                 ))}
               </tbody>
             </table>
