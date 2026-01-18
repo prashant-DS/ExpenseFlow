@@ -382,7 +382,6 @@
     border: 1px solid var(--border);
 
     h4 {
-      margin: 0 0 0.5rem 0;
       color: var(--text-secondary);
       font-size: 0.875rem;
       font-weight: 500;
@@ -831,7 +830,9 @@
     font-size: 0.875rem;
     font-weight: 500;
     z-index: 9999;
-    animation: slideInLeft 0.3s ease-out, slideOutLeft 0.3s ease-in 2.7s;
+    animation:
+      slideInLeft 0.3s ease-out,
+      slideOutLeft 0.3s ease-in 2.7s;
     max-width: 400px;
     word-wrap: break-word;
 

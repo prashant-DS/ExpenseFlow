@@ -39,6 +39,7 @@ function Homepage() {
   const [draftCount, setDraftCount] = useState(0);
   const [toast, setToast] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState(null);
+  const [isOriginalInputCollapsed, setIsOriginalInputCollapsed] = useState(true);
 
   // Restore pending entries and input text from localStorage on mount
   useEffect(() => {
@@ -575,8 +576,16 @@ Return an array of objects with these exact field names: ${csvColumns.join(
 
       {originalInputText && (
         <div className="original-input-display">
-          <h4>Last processed text:</h4>
-          <div className="original-text">"{originalInputText}"</div>
+          <h4
+            onClick={() => setIsOriginalInputCollapsed(!isOriginalInputCollapsed)}
+            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <span>{isOriginalInputCollapsed ? '▶' : '▼'}</span>
+            Last processed text:
+          </h4>
+          {!isOriginalInputCollapsed && (
+            <div className="original-text">"{originalInputText}"</div>
+          )}
         </div>
       )}
 
