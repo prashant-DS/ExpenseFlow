@@ -37,7 +37,8 @@ function Homepage() {
   const [draftCount, setDraftCount] = useState(0);
   const [toast, setToast] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState(null);
-  const [isOriginalInputCollapsed, setIsOriginalInputCollapsed] = useState(true);
+  const [isOriginalInputCollapsed, setIsOriginalInputCollapsed] =
+    useState(true);
   const [hoveredRowIndex, setHoveredRowIndex] = useState(null);
 
   // Restore pending entries and input text from localStorage on mount
@@ -129,7 +130,10 @@ function Homepage() {
         return;
       } catch (parseError) {
         console.error("Invalid JSON format:", parseError);
-        showToast("Invalid JSON format. Please check your input and try again.", "error");
+        showToast(
+          "Invalid JSON format. Please check your input and try again.",
+          "error",
+        );
         setIsLoading(false);
         return;
       }
@@ -166,7 +170,7 @@ function Homepage() {
               }, take today as reference for day,month,year. Today's date is ${new Date().toLocaleDateString()}
 
 Return an array of objects with these exact field names: ${csvColumns.join(
-                ", "
+                ", ",
               )}. Use today's date if no date is mentioned. Respond ONLY in valid JSON format.`,
             },
             {
@@ -309,14 +313,29 @@ Return an array of objects with these exact field names: ${csvColumns.join(
     const sorted = [...pendingEntries].sort((a, b) => {
       // Convert DD-MM-YYYY string to Date object for comparison
       const dateA = new Date(
-        a[ColumnNames.DATE].split("-").reverse().join("-")
+        a[ColumnNames.DATE].split("-").reverse().join("-"),
       );
       const dateB = new Date(
-        b[ColumnNames.DATE].split("-").reverse().join("-")
+        b[ColumnNames.DATE].split("-").reverse().join("-"),
       );
       return dateA - dateB; // Sort in ascending order (oldest first)
     });
     setPendingEntries(sorted);
+  };
+
+  const handlePasteFromClipboard = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (inputMode === "text") {
+        setTextInput(text);
+      } else {
+        setJsonInput(text);
+      }
+      showToast("Pasted from clipboard", "success");
+    } catch (error) {
+      console.error("Failed to read clipboard:", error);
+      showToast("Failed to paste from clipboard", "error");
+    }
   };
 
   const handleAddDraft = () => {
@@ -336,8 +355,12 @@ Return an array of objects with these exact field names: ${csvColumns.join(
       setDraftCount(draftEntries.length);
       showToast(
         `Added ${pendingEntries.length} entries to draft. Total: ${draftEntries.length}`,
-        "success"
+        "success",
       );
+
+      // Clear the UI after adding to draft
+      setPendingEntries([]);
+      setOriginalInputText("");
     } catch (e) {
       console.error("Failed to add to draft:", e);
       showToast("Failed to add entries to draft", "error");
@@ -353,7 +376,14 @@ Return an array of objects with these exact field names: ${csvColumns.join(
     try {
       localStorage.setItem("draftEntries", JSON.stringify(pendingEntries));
       setDraftCount(pendingEntries.length);
-      showToast(`Draft replaced with ${pendingEntries.length} entries`, "success");
+      showToast(
+        `Draft replaced with ${pendingEntries.length} entries`,
+        "success",
+      );
+
+      // Clear the UI after replacing draft
+      setPendingEntries([]);
+      setOriginalInputText("");
     } catch (e) {
       console.error("Failed to replace draft:", e);
       showToast("Failed to replace draft", "error");
@@ -363,7 +393,8 @@ Return an array of objects with these exact field names: ${csvColumns.join(
   const handleClearDraft = async () => {
     const confirmed = await showConfirmDialog({
       title: "Clear Draft",
-      message: "Are you sure you want to clear the draft? This cannot be undone.",
+      message:
+        "Are you sure you want to clear the draft? This cannot be undone.",
       confirmText: "Clear Draft",
       confirmStyle: "danger",
       cancelText: "Cancel",
@@ -418,11 +449,11 @@ Return an array of objects with these exact field names: ${csvColumns.join(
   const handleRemoveNewCategory = (category, type) => {
     if (type === "income") {
       setNewIncomeCategories(
-        newIncomeCategories.filter((cat) => cat !== category)
+        newIncomeCategories.filter((cat) => cat !== category),
       );
     } else {
       setNewExpenseCategories(
-        newExpenseCategories.filter((cat) => cat !== category)
+        newExpenseCategories.filter((cat) => cat !== category),
       );
     }
   };
@@ -598,17 +629,41 @@ Return an array of objects with these exact field names: ${csvColumns.join(
             >
               Categories
             </button>
-            <button
-              onClick={handlePreview}
-              className="preview-btn"
-              disabled={
-                (inputMode === "text" && !textInput.trim()) ||
-                (inputMode === "json" && !jsonInput.trim()) ||
-                isLoading
-              }
-            >
-              {isLoading ? "Processing..." : "Preview Entries"}
-            </button>
+            <div className="center-buttons">
+              <button
+                onClick={handlePasteFromClipboard}
+                className="paste-btn"
+                title="Paste from clipboard"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                  <path d="M9 14h6"></path>
+                  <path d="M9 18h6"></path>
+                  <path d="M9 10h6"></path>
+                </svg>
+              </button>
+              <button
+                onClick={handlePreview}
+                className="preview-btn"
+                disabled={
+                  (inputMode === "text" && !textInput.trim()) ||
+                  (inputMode === "json" && !jsonInput.trim()) ||
+                  isLoading
+                }
+              >
+                {isLoading ? "Processing..." : "Preview Entries"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -616,10 +671,17 @@ Return an array of objects with these exact field names: ${csvColumns.join(
       {originalInputText && (
         <div className="original-input-display">
           <h4
-            onClick={() => setIsOriginalInputCollapsed(!isOriginalInputCollapsed)}
-            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+            onClick={() =>
+              setIsOriginalInputCollapsed(!isOriginalInputCollapsed)
+            }
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
           >
-            <span>{isOriginalInputCollapsed ? '▶' : '▼'}</span>
+            <span>{isOriginalInputCollapsed ? "▶" : "▼"}</span>
             Last processed text:
           </h4>
           {!isOriginalInputCollapsed && (
@@ -645,20 +707,23 @@ Return an array of objects with these exact field names: ${csvColumns.join(
                 {sortedDateGroups.map(([date, entries]) => (
                   <Fragment key={`date-group-${date}`}>
                     <tr key={`date-${date}`} className="date-header-row">
-                      <td colSpan={csvColumns.length + 1} className="date-header-cell">
+                      <td
+                        colSpan={csvColumns.length + 1}
+                        className="date-header-cell"
+                      >
                         {date}
                       </td>
                     </tr>
                     {entries.map((entry, entryIndex) => {
                       // Find the original index in pendingEntries for proper update/delete handling
                       const originalIndex = pendingEntries.findIndex(
-                        (e) => e === entry
+                        (e) => e === entry,
                       );
                       const isLastInGroup = entryIndex === entries.length - 1;
                       return (
                         <tr
                           key={originalIndex}
-                          className={`preview-row ${isLastInGroup ? 'last-in-group' : ''}`}
+                          className={`preview-row ${isLastInGroup ? "last-in-group" : ""}`}
                           onMouseEnter={() => setHoveredRowIndex(originalIndex)}
                           onMouseLeave={() => setHoveredRowIndex(null)}
                         >
@@ -674,7 +739,7 @@ Return an array of objects with these exact field names: ${csvColumns.join(
                                     updateEntry(
                                       originalIndex,
                                       column,
-                                      parseFloat(e.target.value) || 0
+                                      parseFloat(e.target.value) || 0,
                                     )
                                   }
                                   className="table-input"
@@ -685,11 +750,16 @@ Return an array of objects with these exact field names: ${csvColumns.join(
                                   name={`${column}-${originalIndex}`}
                                   value={entry[column] || ""}
                                   onChange={(e) =>
-                                    updateEntry(originalIndex, column, e.target.value)
+                                    updateEntry(
+                                      originalIndex,
+                                      column,
+                                      e.target.value,
+                                    )
                                   }
                                   className="table-input"
                                 >
-                                  {(entry[ColumnNames.TYPE] === TransactionType.INCOME
+                                  {(entry[ColumnNames.TYPE] ===
+                                  TransactionType.INCOME
                                     ? incomeCategories
                                     : expenseCategories
                                   ).map((option) => (
@@ -704,7 +774,11 @@ Return an array of objects with these exact field names: ${csvColumns.join(
                                   name={`${column}-${originalIndex}`}
                                   value={entry[column] || ""}
                                   onChange={(e) =>
-                                    updateEntry(originalIndex, column, e.target.value)
+                                    updateEntry(
+                                      originalIndex,
+                                      column,
+                                      e.target.value,
+                                    )
                                   }
                                   className="table-input"
                                 >
@@ -721,7 +795,11 @@ Return an array of objects with these exact field names: ${csvColumns.join(
                                   type="text"
                                   value={entry[column] || ""}
                                   onChange={(e) =>
-                                    updateEntry(originalIndex, column, e.target.value)
+                                    updateEntry(
+                                      originalIndex,
+                                      column,
+                                      e.target.value,
+                                    )
                                   }
                                   className="table-input"
                                   placeholder={`Enter ${column}`}
@@ -733,14 +811,18 @@ Return an array of objects with these exact field names: ${csvColumns.join(
                             {hoveredRowIndex === originalIndex && (
                               <>
                                 <button
-                                  onClick={() => insertEmptyRow(originalIndex, "above")}
+                                  onClick={() =>
+                                    insertEmptyRow(originalIndex, "above")
+                                  }
                                   className="insert-row-btn above"
                                   title="Add row above"
                                 >
                                   <span className="plus-icon">+</span>
                                 </button>
                                 <button
-                                  onClick={() => insertEmptyRow(originalIndex, "below")}
+                                  onClick={() =>
+                                    insertEmptyRow(originalIndex, "below")
+                                  }
                                   className="insert-row-btn below"
                                   title="Add row below"
                                 >
@@ -889,11 +971,11 @@ Field Requirements:
   - Expense: ${expenseCategories.join(", ")}
 • Description: Short descriptive text (optional, exclude other field data)
 • Date: Format as DD-MM-YYYY (today's date: ${new Date().toLocaleDateString(
-                    "en-GB"
+                    "en-GB",
                   )})
 
 Return an array of objects with these exact field names: ${csvColumns.join(
-                    ", "
+                    ", ",
                   )}. Use today's date if no date is mentioned. Respond ONLY in valid JSON format.
 
 Example format:
@@ -907,7 +989,10 @@ Example format:
   }
 ]`;
                   navigator.clipboard.writeText(llmPrompt);
-                  showToast("Complete LLM prompt copied to clipboard!", "success");
+                  showToast(
+                    "Complete LLM prompt copied to clipboard!",
+                    "success",
+                  );
                   setShowJsonExample(false);
                 }}
               >
@@ -1093,17 +1178,15 @@ Example format:
       )}
 
       {toast && (
-        <div className={`toast toast-${toast.type}`}>
-          {toast.message}
-        </div>
+        <div className={`toast toast-${toast.type}`}>{toast.message}</div>
       )}
 
       {confirmDialog && (
-        <div
-          className="json-popup-overlay"
-          onClick={confirmDialog.onCancel}
-        >
-          <div className="json-popup confirm-dialog" onClick={(e) => e.stopPropagation()}>
+        <div className="json-popup-overlay" onClick={confirmDialog.onCancel}>
+          <div
+            className="json-popup confirm-dialog"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="json-popup-header">
               <h3>{confirmDialog.title}</h3>
               <button

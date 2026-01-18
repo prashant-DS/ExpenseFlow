@@ -367,6 +367,37 @@
         }
       }
 
+      .center-buttons {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .paste-btn {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border);
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-secondary);
+
+        svg {
+          stroke: currentColor;
+        }
+
+        &:hover {
+          background-color: var(--primary);
+          color: var(--text-primary);
+          border-color: var(--primary);
+          transform: translateY(-1px);
+        }
+      }
+
       .preview-btn {
         // This will be centered naturally in the flex container
       }
