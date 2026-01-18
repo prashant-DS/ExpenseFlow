@@ -40,6 +40,7 @@ function Homepage() {
   const [toast, setToast] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState(null);
   const [isOriginalInputCollapsed, setIsOriginalInputCollapsed] = useState(true);
+  const [hoveredRowIndex, setHoveredRowIndex] = useState(null);
 
   // Restore pending entries and input text from localStorage on mount
   useEffect(() => {
@@ -274,6 +275,30 @@ Return an array of objects with these exact field names: ${csvColumns.join(
 
   const deleteEntry = (index) => {
     const updated = pendingEntries.filter((_, i) => i !== index);
+    setPendingEntries(updated);
+  };
+
+  const insertEmptyRow = (index, position) => {
+    // Create an empty entry with all fields empty except Date and Type
+    const emptyEntry = {};
+    const hoveredEntry = pendingEntries[index];
+
+    csvColumns.forEach((column) => {
+      if (column === ColumnNames.DATE) {
+        // Copy date from hovered row
+        emptyEntry[column] = hoveredEntry[column] || "";
+      } else if (column === ColumnNames.TYPE) {
+        // Set type to Expense
+        emptyEntry[column] = TransactionType.EXPENSE;
+      } else {
+        emptyEntry[column] = "";
+      }
+    });
+
+    const updated = [...pendingEntries];
+    // Insert at index+1 for "below", at index for "above"
+    const insertIndex = position === "below" ? index + 1 : index;
+    updated.splice(insertIndex, 0, emptyEntry);
     setPendingEntries(updated);
   };
 
@@ -604,7 +629,12 @@ Return an array of objects with these exact field names: ${csvColumns.join(
               </thead>
               <tbody>
                 {pendingEntries.map((entry, index) => (
-                  <tr key={index}>
+                  <tr
+                    key={index}
+                    className="preview-row"
+                    onMouseEnter={() => setHoveredRowIndex(index)}
+                    onMouseLeave={() => setHoveredRowIndex(null)}
+                  >
                     {csvColumns.map((column) => (
                       <td key={column}>
                         {column === ColumnNames.AMOUNT ? (
@@ -672,7 +702,25 @@ Return an array of objects with these exact field names: ${csvColumns.join(
                         )}
                       </td>
                     ))}
-                    <td>
+                    <td className="actions-cell">
+                      {hoveredRowIndex === index && (
+                        <>
+                          <button
+                            onClick={() => insertEmptyRow(index, "above")}
+                            className="insert-row-btn above"
+                            title="Add row above"
+                          >
+                            <span className="plus-icon">+</span>
+                          </button>
+                          <button
+                            onClick={() => insertEmptyRow(index, "below")}
+                            className="insert-row-btn below"
+                            title="Add row below"
+                          >
+                            <span className="plus-icon">+</span>
+                          </button>
+                        </>
+                      )}
                       <button
                         onClick={() => deleteEntry(index)}
                         className="delete-entry-btn"
