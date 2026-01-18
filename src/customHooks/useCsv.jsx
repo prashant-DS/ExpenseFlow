@@ -36,22 +36,10 @@ const initializeGoogleAPI = async () => {
   });
 };
 
-const searchForSpreadsheet = async (accessToken) => {
-  window.gapi.client.setToken({ access_token: accessToken });
+const findOrCreateMainFolder = async () => {
+  const folderName = "ExpenseFlow";
 
-  const response = await window.gapi.client.drive.files.list({
-    q: `name='${GOOGLE_SHEETS_CONFIG.fileName}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`,
-    fields: "files(id, name)",
-  });
-
-  const files = response.result.files || [];
-  return files.length > 0 ? files[0].id : null;
-};
-
-const findOrCreateBackupFolder = async () => {
-  const folderName = "ExpenseFlow Backups";
-
-  // Search for existing backup folder
+  // Search for existing main folder
   const searchResponse = await window.gapi.client.drive.files.list({
     q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
     fields: "files(id, name)",
@@ -62,12 +50,12 @@ const findOrCreateBackupFolder = async () => {
 
   // If folder exists, return its ID
   if (folders.length > 0) {
-    console.log("Found existing backup folder:", folders[0].id);
+    console.log("Found existing ExpenseFlow folder:", folders[0].id);
     return folders[0].id;
   }
 
-  // Create new backup folder
-  console.log("Creating new backup folder...");
+  // Create new main folder
+  console.log("Creating new ExpenseFlow folder...");
   const createResponse = await window.gapi.client.drive.files.create({
     resource: {
       name: folderName,
@@ -76,12 +64,67 @@ const findOrCreateBackupFolder = async () => {
     fields: "id",
   });
 
-  console.log("Created backup folder:", createResponse.result.id);
+  console.log("Created ExpenseFlow folder:", createResponse.result.id);
+  return createResponse.result.id;
+};
+
+const searchForSpreadsheet = async (accessToken) => {
+  window.gapi.client.setToken({ access_token: accessToken });
+
+  // First, get the main folder
+  const mainFolderId = await findOrCreateMainFolder();
+
+  // Search for spreadsheet within the main folder
+  const response = await window.gapi.client.drive.files.list({
+    q: `name='${GOOGLE_SHEETS_CONFIG.fileName}' and '${mainFolderId}' in parents and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`,
+    fields: "files(id, name)",
+  });
+
+  const files = response.result.files || [];
+  return files.length > 0 ? files[0].id : null;
+};
+
+const findOrCreateBackupFolder = async () => {
+  const folderName = "Backups";
+
+  // Get the main ExpenseFlow folder first
+  const mainFolderId = await findOrCreateMainFolder();
+
+  // Search for existing backup folder inside main folder
+  const searchResponse = await window.gapi.client.drive.files.list({
+    q: `name='${folderName}' and '${mainFolderId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    fields: "files(id, name)",
+    spaces: "drive",
+  });
+
+  const folders = searchResponse.result.files || [];
+
+  // If folder exists, return its ID
+  if (folders.length > 0) {
+    console.log("Found existing Backups folder:", folders[0].id);
+    return folders[0].id;
+  }
+
+  // Create new backup folder inside main folder
+  console.log("Creating new Backups folder...");
+  const createResponse = await window.gapi.client.drive.files.create({
+    resource: {
+      name: folderName,
+      mimeType: "application/vnd.google-apps.folder",
+      parents: [mainFolderId],
+    },
+    fields: "id",
+  });
+
+  console.log("Created Backups folder:", createResponse.result.id);
   return createResponse.result.id;
 };
 
 const createSpreadsheet = async (accessToken) => {
   window.gapi.client.setToken({ access_token: accessToken });
+
+  // Get the main folder to place the spreadsheet in
+  const mainFolderId = await findOrCreateMainFolder();
 
   const createResponse = await window.gapi.client.sheets.spreadsheets.create({
     properties: {
@@ -102,6 +145,16 @@ const createSpreadsheet = async (accessToken) => {
   });
 
   const spreadsheetId = createResponse.result.spreadsheetId;
+
+  // Move the spreadsheet to the main folder
+  await window.gapi.client.drive.files.update({
+    fileId: spreadsheetId,
+    addParents: mainFolderId,
+    removeParents: "root",
+    fields: "id, parents",
+  });
+
+  console.log("Created spreadsheet in ExpenseFlow folder");
 
   await window.gapi.client.sheets.spreadsheets.values.batchUpdate({
     spreadsheetId,
@@ -363,7 +416,7 @@ export const CsvProvider = ({ children }) => {
       });
 
       console.log("Successfully created backup:", backupName);
-      console.log("Backup location: ExpenseFlow Backups folder");
+      console.log("Backup location: ExpenseFlow/Backups folder");
 
       return {
         id: response.result.id,
