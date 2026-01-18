@@ -5,7 +5,7 @@ import {
   Link,
   useLocation,
 } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 import { CsvProvider, useCsv } from "./customHooks/useCsv";
 import Homepage from "./pages/Homepage";
@@ -18,6 +18,30 @@ import "./App.css";
 
 function NavBar() {
   const location = useLocation();
+  const { backupSpreadsheet } = useCsv();
+  const [isBackingUp, setIsBackingUp] = useState(false);
+  const [backupStatus, setBackupStatus] = useState(null);
+
+  const handleBackup = async () => {
+    try {
+      setIsBackingUp(true);
+      setBackupStatus(null);
+      const result = await backupSpreadsheet();
+      setBackupStatus({
+        type: "success",
+        message: `✓ Backup created successfully`,
+      });
+      setTimeout(() => setBackupStatus(null), 2500);
+    } catch (error) {
+      setBackupStatus({
+        type: "error",
+        message: `✗ Backup failed: ${error.message}`,
+      });
+      setTimeout(() => setBackupStatus(null), 2500);
+    } finally {
+      setIsBackingUp(false);
+    }
+  };
 
   return (
     <nav className="navbar">
@@ -50,6 +74,23 @@ function NavBar() {
             View
           </Link>
         </div>
+
+        <div className="nav-right">
+          <button
+            className="backup-btn"
+            onClick={handleBackup}
+            disabled={isBackingUp}
+            title="Create a backup of your spreadsheet"
+          >
+            {isBackingUp && <div className="backup-spinner"></div>}
+            {!isBackingUp && "Backup"}
+          </button>
+          {backupStatus && (
+            <div className={`backup-status ${backupStatus.type}`}>
+              {backupStatus.message}
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   );
@@ -66,7 +107,7 @@ function AppContent() {
         localStorage.setItem("google_access_token", tokenResponse.access_token);
         localStorage.setItem(
           "google_token_expiry",
-          (Date.now() + tokenResponse.expires_in * 1000).toString()
+          (Date.now() + tokenResponse.expires_in * 1000).toString(),
         );
 
         // Load Google Sheets data
@@ -165,8 +206,8 @@ function ConfigCheck({ children }) {
             <h2>⚙️ Setup Required</h2>
             <p className="error-message">
               ExpenseFlow requires Google Sheets integration to store your data.
-              Please contact your administrator or check the setup guide to complete
-              the configuration.
+              Please contact your administrator or check the setup guide to
+              complete the configuration.
             </p>
           </div>
         </div>

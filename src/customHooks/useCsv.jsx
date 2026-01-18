@@ -48,6 +48,38 @@ const searchForSpreadsheet = async (accessToken) => {
   return files.length > 0 ? files[0].id : null;
 };
 
+const findOrCreateBackupFolder = async () => {
+  const folderName = "ExpenseFlow Backups";
+
+  // Search for existing backup folder
+  const searchResponse = await window.gapi.client.drive.files.list({
+    q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    fields: "files(id, name)",
+    spaces: "drive",
+  });
+
+  const folders = searchResponse.result.files || [];
+
+  // If folder exists, return its ID
+  if (folders.length > 0) {
+    console.log("Found existing backup folder:", folders[0].id);
+    return folders[0].id;
+  }
+
+  // Create new backup folder
+  console.log("Creating new backup folder...");
+  const createResponse = await window.gapi.client.drive.files.create({
+    resource: {
+      name: folderName,
+      mimeType: "application/vnd.google-apps.folder",
+    },
+    fields: "id",
+  });
+
+  console.log("Created backup folder:", createResponse.result.id);
+  return createResponse.result.id;
+};
+
 const createSpreadsheet = async (accessToken) => {
   window.gapi.client.setToken({ access_token: accessToken });
 
@@ -305,6 +337,44 @@ export const CsvProvider = ({ children }) => {
     }
   };
 
+  const backupSpreadsheet = async () => {
+    if (!spreadsheetId) {
+      throw new Error("No spreadsheet to backup");
+    }
+
+    try {
+      // Get or create the backup folder
+      const backupFolderId = await findOrCreateBackupFolder();
+
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/[:.]/g, "-")
+        .replace("T", "_")
+        .split("Z")[0];
+
+      const backupName = `${GOOGLE_SHEETS_CONFIG.fileName}_backup_${timestamp}`;
+
+      const response = await window.gapi.client.drive.files.copy({
+        fileId: spreadsheetId,
+        resource: {
+          name: backupName,
+          parents: [backupFolderId],
+        },
+      });
+
+      console.log("Successfully created backup:", backupName);
+      console.log("Backup location: ExpenseFlow Backups folder");
+
+      return {
+        id: response.result.id,
+        name: backupName,
+      };
+    } catch (error) {
+      console.error("Failed to backup spreadsheet:", error);
+      throw error;
+    }
+  };
+
   const value = {
     isLoading,
     error,
@@ -314,6 +384,7 @@ export const CsvProvider = ({ children }) => {
     expenseCategories,
     addEntriesToCsv,
     updateCategories,
+    backupSpreadsheet,
     hasData: csvData.length > 0,
     hasColumns: csvColumns.length > 0,
     loadGoogleSheetsData,
