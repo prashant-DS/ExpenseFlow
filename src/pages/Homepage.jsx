@@ -526,7 +526,7 @@ Return an array of objects with these exact field names: ${csvColumns.join(
                     .map((entry, index) => (
                       <tr key={index}>
                         {csvColumns.map((column) => (
-                          <td key={column}>
+                          <td key={column} data-label={column}>
                             {column === ColumnNames.AMOUNT
                               ? `₹${entry[column]}`
                               : entry[column] || ""}
