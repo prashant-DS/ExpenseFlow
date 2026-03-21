@@ -167,7 +167,7 @@ function Homepage() {
               }: short descriptive text which should not include any other fields. if nothing to describe, leave empty
 - ${ColumnNames.DATE}: format as ${
                 CSV_CONFIG.dateFormat
-              }, take today as reference for day,month,year. Today's date is ${new Date().toLocaleDateString()}
+              }, take today as reference for day,month,year. Today's date is ${new Date().getDate().toString().padStart(2, "0")}-${(new Date().getMonth() + 1).toString().padStart(2, "0")}-${new Date().getFullYear()}
 
 Return an array of objects with these exact field names: ${csvColumns.join(
                 ", ",
@@ -310,16 +310,23 @@ Return an array of objects with these exact field names: ${csvColumns.join(
   };
 
   const sortEntriesByDate = () => {
+    const parseToDate = (dateStr) => {
+      if (!dateStr) return new Date(0);
+      const parts = dateStr.split("-");
+      if (parts.length === 3) {
+        // DD-MM-YYYY → Date
+        return new Date(parts[2], parts[1] - 1, parts[0]);
+      }
+      const fallback = new Date(dateStr);
+      return isNaN(fallback.getTime()) ? new Date(0) : fallback;
+    };
+
     const sorted = [...pendingEntries].sort((a, b) => {
-      // Convert DD-MM-YYYY string to Date object for comparison
-      const dateA = new Date(
-        a[ColumnNames.DATE].split("-").reverse().join("-"),
-      );
-      const dateB = new Date(
-        b[ColumnNames.DATE].split("-").reverse().join("-"),
-      );
-      return dateA - dateB; // Sort in ascending order (oldest first)
+      const dateA = parseToDate(a[ColumnNames.DATE]);
+      const dateB = parseToDate(b[ColumnNames.DATE]);
+      return dateA - dateB;
     });
+
     setPendingEntries(sorted);
   };
 
@@ -704,9 +711,9 @@ Return an array of objects with these exact field names: ${csvColumns.join(
                 </tr>
               </thead>
               <tbody>
-                {sortedDateGroups.map(([date, entries]) => (
-                  <Fragment key={`date-group-${date}`}>
-                    <tr key={`date-${date}`} className="date-header-row">
+                {sortedDateGroups.map(([date, entries], groupIndex) => (
+                  <Fragment key={`date-group-${groupIndex}`}>
+                    <tr className="date-header-row">
                       <td
                         colSpan={csvColumns.length + 1}
                         className="date-header-cell"
